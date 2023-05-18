@@ -11,6 +11,10 @@
 #define led_b 25
 #define led_r 27
 #define analog_input 35
+// Pines y dirección I2C
+#define SDA_PIN 21
+#define SCL_PIN 22
+#define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
 
 int flag = false;
 int voltaje;
@@ -47,6 +51,12 @@ void setup()
   Wire.begin();
   mpu.begin();
   preferences.begin("myPreferences", false);
+
+  // Comenzar conexión I2C
+  Wire.begin(SDA_PIN, SCL_PIN);
+
+  Wire.beginTransmission(MPU6050_I2C_ADDRESS);
+  Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
 
   // Conexión a la red WiFi
   WiFi.begin(ssid, password);
