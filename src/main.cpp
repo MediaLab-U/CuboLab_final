@@ -11,10 +11,10 @@
 #define led_b 25
 #define led_r 27
 #define analog_input 35
-
+// Pines y dirección I2C
 #define SDA_PIN 21
 #define SCL_PIN 22
-#define MPU6050_I2C_ADDRESS 0x68
+#define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
 
 int flag = false;
 int voltaje;
@@ -35,7 +35,7 @@ double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
 
-void IRAM_ATTR handleInterrupt() 
+void IRAM_ATTR handleInterrupt()
 {
   Serial.println("MOVIMIENTO DETECTADO!!!");
 }
@@ -45,7 +45,6 @@ void IRAM_ATTR cargando()
   Serial.println("Conectado a bateria");
 }
 
-
 void setup()
 {
   Serial.begin(115200);
@@ -53,9 +52,14 @@ void setup()
   mpu.begin();
   preferences.begin("myPreferences", false);
 
+  // Comenzar conexión I2C
+  Wire.begin(SDA_PIN, SCL_PIN);
+
+  Wire.beginTransmission(MPU6050_I2C_ADDRESS);
+  Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
+
   // Conexión a la red WiFi
   WiFi.begin(ssid, password);
-
 
   // Configuración para dejar activos los pines de batería
   // Configurar los pines 4, 5 y 6 como entrada
@@ -94,22 +98,22 @@ void setup()
     Serial.print(".");
     delay(100);
     Serial.println(".");
-    
+
     digitalWrite(led_b, LOW);
     digitalWrite(led_g, HIGH);
     digitalWrite(led_r, HIGH);
-    for (x = 0; x=5000 ; x++)
+    for (x = 0; x = 5000; x++)
     {
       delay(5000);
       break;
     }
 
-    if(WiFi.status() == WL_CONNECTED)
+    if (WiFi.status() == WL_CONNECTED)
     {
       break;
     }
 
-    if(x == 1000)
+    if (x == 1000)
     {
       Serial.println("No se ha podido conectar a la red WIFI");
       Serial.print("Reiniciando ESP32");
@@ -138,12 +142,12 @@ void setup()
   if (!mpu.begin())
   {
     Serial.println("Failed to find MPU6050 chip");
-      while (1)
-      {
-        delay(1000);
-        Serial.println("Reiniciando ESP32");
-        esp_restart();
-      }
+    while (1)
+    {
+      delay(1000);
+      Serial.println("Reiniciando ESP32");
+      esp_restart();
+    }
   }
   Serial.println("MPU6050 Found!");
 
@@ -213,9 +217,9 @@ void setup()
   delay(100);
   mpu.setMotionInterrupt(true);
   pinMode(14, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING); 
+  attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING);
   mpu.setMotionDetectionThreshold(1.0f); // deteccion de un cambio de gravedad en un incremento de 1m/s^2
-  mpu.setMotionDetectionDuration(2); 
+  mpu.setMotionDetectionDuration(2);
 
   pinMode(4, INPUT_PULLUP);
   // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
@@ -232,30 +236,30 @@ double Ctimer(void)
 
 void loop()
 {
-  //Serial.println(macStr);
-  // Código indicador de batería//
+  // Serial.println(macStr);
+  //  Código indicador de batería//
   /*****************************/
   int valor_actual = analogRead(analog_input); // leemos el valor analógico presente en el pin
-  float v_real = (valor_actual*(5.00/1023.00))*2.8;
+  float v_real = (valor_actual * (5.00 / 1023.00)) * 2.8;
   Serial.println(analogRead(analog_input));
   Serial.println(digitalRead(GPIO_NUM_4));
   if (v_real < 12 && v_real >= 10)
   {
-    digitalWrite(led_r,LOW);
-    digitalWrite(led_g,HIGH);
-    digitalWrite(led_b,HIGH);
+    digitalWrite(led_r, LOW);
+    digitalWrite(led_g, HIGH);
+    digitalWrite(led_b, HIGH);
   }
   else if (v_real >= 12 && v_real < 14)
   {
-    digitalWrite(led_r,HIGH);
-    digitalWrite(led_g,LOW);
-    digitalWrite(led_b,LOW);
+    digitalWrite(led_r, HIGH);
+    digitalWrite(led_g, LOW);
+    digitalWrite(led_b, LOW);
   }
   else if (v_real >= 14)
   {
-    digitalWrite(led_r,HIGH);
-    digitalWrite(led_g,LOW);
-    digitalWrite(led_b,HIGH);
+    digitalWrite(led_r, HIGH);
+    digitalWrite(led_g, LOW);
+    digitalWrite(led_b, HIGH);
   }
   /***********************/
   // Cierre código indicador de batería
@@ -430,7 +434,7 @@ void loop()
   }
   /***********************/
   // Despertar al ESP32
-  
+
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
 
   Serial.println(mpu.getMotionInterruptStatus());
@@ -463,19 +467,18 @@ void loop()
     Serial.println("El nuevo estado guardado en memoria no volátil es: " + preferences.getString("estadoAnterior", "Ninguno"));
     preferences.end();
 
-    //Apagar el LED
+    // Apagar el LED
     digitalWrite(led_g, HIGH);
     digitalWrite(led_r, HIGH);
     digitalWrite(led_b, HIGH);
     // Código para enviar a dormi el SP32 y despertarlo cada 15 minutos
     Serial.println("Me voy a dormir");
-    
-    esp_deep_sleep_start();
 
+    esp_deep_sleep_start();
   }
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
 
-  if(v_real <= 11)
+  if (v_real <= 11)
   {
     Serial.println("No tengo tension");
     esp_deep_sleep_start();
