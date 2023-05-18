@@ -12,6 +12,10 @@
 #define led_r 27
 #define analog_input 35
 
+#define SDA_PIN 21
+#define SCL_PIN 22
+#define MPU6050_I2C_ADDRESS 0x68
+
 int flag = false;
 int voltaje;
 const char *ssid = "MediaLab guest";
