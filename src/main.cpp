@@ -228,8 +228,8 @@ void loop()
   /*****************************/
   int valor_actual = analogRead(analog_input); // leemos el valor analógico presente en el pin
   float v_real = (valor_actual * (5.00 / 1023.00)) * 2.8;
-  Serial.println(analogRead(analog_input));
   Serial.println(digitalRead(GPIO_NUM_4));
+  Serial.println(v_real);
   if (v_real < 12 && v_real >= 10)
   {
     digitalWrite(led_r, LOW);
@@ -425,18 +425,21 @@ void loop()
     Serial.println("No tengo tension");
     esp_deep_sleep_start();
   }
+
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+
   while (digitalRead(GPIO_NUM_4) == 1)
   {
+    int valor_actual1 = analogRead(analog_input); // leemos el valor analógico presente en el pin
+    float v_real1 = (valor_actual1 * (5.00 / 1023.00)) * 2.8;
     analogWrite(led_r, 150);
     analogWrite(led_g, 30);
     analogWrite(led_b, HIGH);
-
-    if (digitalRead(GPIO_NUM_4) != 1)
+    if (v_real1 >= 14)
     {
       digitalWrite(led_r, HIGH);
-      digitalWrite(led_g, HIGH);
+      digitalWrite(led_g, LOW);
       digitalWrite(led_b, HIGH);
-      break;
     }
   }
   // Despertar al ESP32
