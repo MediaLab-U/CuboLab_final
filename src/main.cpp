@@ -7,23 +7,27 @@
 #include <HTTPClient.h>
 #include "I2Cdev.h"
 
+//Pines LEDS y seguidor de tensión
 #define led_g 26
 #define led_b 25
 #define led_r 27
 #define analog_input 35
+
 // Pines y dirección I2C
 #define SDA_PIN 21
 #define SCL_PIN 22
 #define MPU6050_I2C_ADDRESS 0x68 // Suele ser 0x68 o 0x69
 
-int flag = false;
+
 int voltaje;
+
+//Variables de credenciales de la Wifi
 const char *ssid = "MediaLab guest";
 const char *password = "medialab2019";
 
-HTTPClient http;
+HTTPClient http; //Envío de datos a la base de datos de MediaLab
 
-Preferences preferences;
+Preferences preferences; //Clase para configurar la memoria no volatil del ESP32
 
 char macStr[18];
 byte mac[6];
