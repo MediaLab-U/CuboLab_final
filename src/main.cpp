@@ -14,7 +14,7 @@
 // Pines y dirección I2C
 #define SDA_PIN 21
 #define SCL_PIN 22
-#define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
+#define MPU6050_I2C_ADDRESS 0x68 // Suele ser 0x68 o 0x69
 
 int flag = false;
 int voltaje;
@@ -83,6 +83,8 @@ void setup()
 
   pinMode(analog_input, INPUT);
 
+  // Conexion a la red Wifi
+  /****************************/
   Serial.print("Conectando a la red WiFi.");
   delay(100);
   Serial.print(".");
@@ -122,8 +124,11 @@ void setup()
   digitalWrite(led_b, HIGH);
 
   Serial.println("Conexión exitosa");
+  /****************************/
+  // Cierre conexion a la Wifi
 
   // Obtención de la dirección MAC del ESP32
+  /****************************/
   WiFi.macAddress(mac);
 
   // Conversión de la dirección MAC a una cadena de caracteres
@@ -132,10 +137,12 @@ void setup()
 
   while (!Serial)
     delay(1000); // will pause Zero, Leonardo, etc until serial console opens
+  /****************************/
+  // Cierre
 
+  // Valoración del inicio del MPU6050
+  /****************************/
   Serial.println("Adafruit MPU6050 test!");
-
-  // Try to initialize!
   if (!mpu.begin())
   {
     Serial.println("Failed to find MPU6050 chip");
@@ -147,7 +154,11 @@ void setup()
     }
   }
   Serial.println("MPU6050 Found!");
+  /****************************/
+  // Cierre
 
+  // Calibración del MPU6050
+  /****************************/
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
   Serial.print("Accelerometer range set to: ");
   switch (mpu.getAccelerometerRange())
@@ -209,19 +220,33 @@ void setup()
     Serial.println("5 Hz");
     break;
   }
+  /****************************/
+  // Cierre de la calibración del MPU6050
 
-  Serial.println("");
-  delay(100);
+  // Configuración del pin de interrupción del MPU6050
+  /****************************/
   mpu.setMotionInterrupt(true);
   pinMode(14, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING);
+  /****************************/
+  // Cierre de la configuración
+
+  // Calibración de la sensibilidad del pin de interrpción
+  /****************************/
   mpu.setMotionDetectionThreshold(1.0f); // deteccion de un cambio de gravedad en un incremento de 1m/s^2
   mpu.setMotionDetectionDuration(2);
+  /****************************/
+  // Cierre
 
+  // Valor de tensión de la batería
+  /****************************/
   pinMode(4, INPUT_PULLUP);
   // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
+  /****************************/
+  // Cierre
 }
-
+// timer
+/****************************/
 double Ctimer(void)
 {
   struct timeval tm;
@@ -233,8 +258,28 @@ double Ctimer(void)
 
 void loop()
 {
-  // Serial.println(macStr);
-  //  Código indicador de batería//
+  // Enable ESP32 wakeup when is connected
+  /****************************/
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+  while (digitalRead(GPIO_NUM_4) == 1)
+  {
+    int valor_actual1 = analogRead(analog_input); // leemos el valor analógico presente en el pin
+    float v_real1 = (valor_actual1 * (5.00 / 1023.00)) * 2.8;
+    analogWrite(led_r, 150);
+    analogWrite(led_g, 30);
+    analogWrite(led_b, HIGH);
+    if (v_real1 >= 14)
+    {
+      digitalWrite(led_r, HIGH);
+      digitalWrite(led_g, LOW);
+      digitalWrite(led_b, HIGH);
+      break;
+    }
+  }
+  /****************************/
+  // Cierre
+
+  //  Código indicador led de batería//
   /*****************************/
   int valor_actual = analogRead(analog_input); // leemos el valor analógico presente en el pin
   float v_real = (valor_actual * (5.00 / 1023.00)) * 2.8;
@@ -430,33 +475,39 @@ void loop()
     }
   }
   /***********************/
+
+  // Deep Sleep when the battery hasn't enought voltage
+  /****************************/
   if (v_real <= 11 && digitalRead(GPIO_NUM_4) != 1)
   {
     Serial.println("No tengo tension");
     esp_deep_sleep_start();
   }
 
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+  // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
 
-  while (digitalRead(GPIO_NUM_4) == 1)
-  {
-    int valor_actual1 = analogRead(analog_input); // leemos el valor analógico presente en el pin
-    float v_real1 = (valor_actual1 * (5.00 / 1023.00)) * 2.8;
-    analogWrite(led_r, 150);
-    analogWrite(led_g, 30);
-    analogWrite(led_b, HIGH);
-    if (v_real1 >= 14)
-    {
-      digitalWrite(led_r, HIGH);
-      digitalWrite(led_g, LOW);
-      digitalWrite(led_b, HIGH);
-    }
-  }
-  // Despertar al ESP32
+  // while (digitalRead(GPIO_NUM_4) == 1)
+  // {
+  //   int valor_actual1 = analogRead(analog_input); // leemos el valor analógico presente en el pin
+  //   float v_real1 = (valor_actual1 * (5.00 / 1023.00)) * 2.8;
+  //   analogWrite(led_r, 150);
+  //   analogWrite(led_g, 30);
+  //   analogWrite(led_b, HIGH);
+  //   if (v_real1 >= 14)
+  //   {
+  //     digitalWrite(led_r, HIGH);
+  //     digitalWrite(led_g, LOW);
+  //     digitalWrite(led_b, HIGH);
+  //     break;
+  //   }
+  // }
+
+  // ESP32 wakeup when the MPU moves
+  /****************************/
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
+  /****************************/
 
-  Serial.println(mpu.getMotionInterruptStatus());
-  delay(1000);
+  // Serial.println(mpu.getMotionInterruptStatus());
   // Parte encargada de comprobar si se ha realizado el trabajo, comprobar el valor anterior en memoria
   // y enviar los datos a la base de datos
   if (trabajoRealizado)
