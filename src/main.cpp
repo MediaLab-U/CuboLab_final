@@ -1,11 +1,14 @@
 #include <Arduino.h>
 #include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
 #include <Wire.h>
 #include <esp_sleep.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "I2Cdev.h"
+#include <WebServer.h>
+#include "ticker.h"
 
 #define led_g 26
 #define led_b 25
@@ -15,15 +18,25 @@
 #define SDA_PIN 21
 #define SCL_PIN 22
 #define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
+#define pin_tension 4
+
+Preferences preferences;
 
 int flag = false;
 int voltaje;
-const char *ssid = "MediaLab guest";
-const char *password = "medialab2019";
+const char *ssid = "ConfigCUBO";
+const char *password = "cubolab1234";
+// Variables donde se guardan los datos del wifi
+String cuboSSID = "";
+String cuboPassword = "";
+String ssid1 = "";
+String password1 = "";
+
+WebServer server(80);
 
 HTTPClient http;
 
-Preferences preferences;
+Ticker timer;
 
 char macStr[18];
 byte mac[6];
@@ -34,6 +47,83 @@ int x = 0;
 double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
+
+
+void timerCallback()
+{
+    // Código a ejecutar cuando se alcance el tiempo deseado
+  //     WiFi.disconnect(true);
+  // WiFi.begin(cuboSSID.c_str(), cuboPassword.c_str());
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   delay(500);
+  //   Serial.print(".");
+  // }
+
+  WiFi.disconnect(true);
+  WiFi.begin(cuboSSID.c_str(), cuboPassword.c_str());
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("temporizador terminado");
+   timer.detach();
+}
+
+void handleRoot() 
+{
+
+ String listaredes = "";
+  int numredes = WiFi.scanNetworks();
+
+  for (int i = 0; i < numredes; i++) {
+    String ssidd = WiFi.SSID(i);
+    Serial.print(".");
+    listaredes += "<li><a href='/select?ssid=" + ssidd + "'>" + ssidd + "</a></li>";
+  }
+
+  String html = "<html><body>"
+                //"<img src='/sensor01.jpg'>"
+                "<h1>Redes WiFi disponibles:</h1>"
+                "<ul>" + listaredes + "</ul>"
+                "</body></html>";
+
+  server.send(200, "text/html", html);
+}
+
+
+void handleSelect() {
+  cuboSSID = server.arg("ssid");
+  server.send(200, "text/html", "SSID seleccionado: " + cuboSSID + "\nPor favor, ingresa la contraseña correspondiente: <form method='POST' action='/save'><input type='password' name='password'><input type='submit' value='Guardar'></form>");
+  //   String html = "<html><body>"
+  //               "<h1>Redes WiFi disponibles:</h1>"
+  //               "<ul>" + listaredes + "</ul>"
+  //               "</body></html>";
+
+  // server.send(200, "text/html", html);
+  Serial.println("ssid guardado");
+}
+
+void handleSave() {
+  cuboPassword = server.arg("password");
+  server.send(200, "text/plain", "SSID y contraseña guardados: " + cuboSSID + ", " + cuboPassword);
+  delay(2000);
+
+  WiFi.disconnect(true);
+  WiFi.begin(cuboSSID.c_str(), cuboPassword.c_str());
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  preferences.putString("ssid", cuboSSID);
+  preferences.putString("pass", cuboPassword);
+
+  Serial.println("");
+  Serial.println("Conexión establecida");
+  Serial.print("Dirección IP: ");
+  Serial.println(WiFi.localIP());
+}
 
 void IRAM_ATTR handleInterrupt()
 {
@@ -59,7 +149,9 @@ void setup()
   Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
 
   // Conexión a la red WiFi
-  WiFi.begin(ssid, password);
+  ssid1 = preferences.getString("ssid", "medialab");
+  password1 = preferences.getString("pass", "medialab");
+  WiFi.begin(ssid1.c_str(), password1.c_str());
 
   // Configuración para dejar activos los pines de batería
   // Configurar los pines 4, 5 y 6 como entrada
@@ -106,21 +198,51 @@ void setup()
     }
 
     x = x + 1;
-
-    if (x == 1000)
+    Serial.print(x);
+    if (x == 20)
     {
       digitalWrite(led_g, HIGH);
       digitalWrite(led_r, HIGH);
       digitalWrite(led_b, HIGH);
       Serial.println("No se ha podido conectar a la red WIFI");
-      Serial.print("Reiniciando ESP32");
-      esp_restart();
+      // Serial.print("Entrando en modo AP...");
+      // /////
+      WiFi.disconnect(true);
+      WiFi.softAP(ssid, password);
+      delay(100);
+
+      server.on("/", handleRoot);
+      server.on("/select", handleSelect);
+      server.on("/save", handleSave);
+
+      server.begin();
+
+      Serial.println("Modo punto de acceso iniciado");
+      break;
+      //esp_restart();
     }
   }
+
   digitalWrite(led_g, HIGH);
   digitalWrite(led_r, HIGH);
   digitalWrite(led_b, HIGH);
 
+  //Serial.print("Entrando en modo AP...");
+      /////
+      // WiFi.disconnect(true);
+      // WiFi.softAP(ssid, password);
+      // delay(100);
+
+      // server.on("/", handleRoot);
+      // server.on("/select", handleSelect);
+      // server.on("/save", handleSave);
+
+      // server.begin();
+
+      // Serial.println("Modo punto de acceso iniciado");
+
+  if (WiFi.status() == WL_CONNECTED)
+  {
   Serial.println("Conexión exitosa");
 
   // Obtención de la dirección MAC del ESP32
@@ -136,19 +258,20 @@ void setup()
   Serial.println("Adafruit MPU6050 test!");
 
   // Try to initialize!
-  if (!mpu.begin())
-  {
-    Serial.println("Failed to find MPU6050 chip");
-    while (1)
-    {
-      delay(1000);
-      Serial.println("Reiniciando ESP32");
-      esp_restart();
-    }
-  }
+  // if (!mpu.begin())
+  // {
+  //   Serial.println("Failed to find MPU6050 chip");
+  //   // while (1)
+  //   // {
+  //   //   delay(1000);
+  //   //   Serial.println("Reiniciando ESP32");
+  //   //   esp_restart();
+  //   // }
+  // }
   Serial.println("MPU6050 Found!");
 
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  Serial.println("seleccionado rango");
   Serial.print("Accelerometer range set to: ");
   switch (mpu.getAccelerometerRange())
   {
@@ -220,6 +343,7 @@ void setup()
 
   pinMode(4, INPUT_PULLUP);
   // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
+  }
 }
 
 double Ctimer(void)
@@ -233,13 +357,35 @@ double Ctimer(void)
 
 void loop()
 {
+  server.handleClient();
   // Serial.println(macStr);
   //  Código indicador de batería//
   /*****************************/
+  if (WiFi.status() == WL_CONNECTED)
+  {
   int valor_actual = analogRead(analog_input); // leemos el valor analógico presente en el pin
   float v_real = (valor_actual * (5.00 / 1023.00)) * 2.8;
   Serial.println(digitalRead(GPIO_NUM_4));
   Serial.println(v_real);
+
+  // while (pin_tension == HIGH) 
+  // {
+  //   WiFi.disconnect(true);
+  //   WiFi.softAP(ssid, password);
+  //   delay(10);
+
+  //   server.on("/", handleRoot);
+  //   server.on("/select", handleSelect);
+  //   server.on("/save", handleSave);
+
+  //   server.begin();
+
+  //   Serial.println("Modo punto de acceso iniciado");
+
+  //   timer.attach(30.0, timerCallback);
+
+  // }
+
   if (v_real < 12 && v_real >= 10)
   {
     digitalWrite(led_r, LOW);
@@ -501,4 +647,5 @@ void loop()
   //   Serial.println("No tengo tension");
   //   esp_deep_sleep_start();
   // }
+  }
 }
