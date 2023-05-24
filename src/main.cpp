@@ -16,14 +16,14 @@
 // Pines y dirección I2C
 #define SDA_PIN 21
 #define SCL_PIN 22
-#define MPU6050_I2C_ADDRESS 0x68 // Suele ser 0x68 o 0x69
+// #define MPU6050_I2C_ADDRESS 0x68 // Suele ser 0x68 o 0x69
 
 
 int voltaje;
 
 //Variables de credenciales de la Wifi
-const char *ssid = "MediaLab guest";
-const char *password = "medialab2019";
+const char *ssid = "Alvaro";
+const char *password = "98765432";
 
 HTTPClient http; //Envío de datos a la base de datos de MediaLab
 
@@ -57,10 +57,10 @@ void setup()
   preferences.begin("myPreferences", false);
 
   // Comenzar conexión I2C
-  Wire.begin(SDA_PIN, SCL_PIN);
+  // Wire.begin(SDA_PIN, SCL_PIN);
 
-  Wire.beginTransmission(MPU6050_I2C_ADDRESS);
-  Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
+  // Wire.beginTransmission(MPU6050_I2C_ADDRESS);
+  // Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
 
   // Conexión a la red WiFi
   WiFi.begin(ssid, password);
@@ -521,7 +521,7 @@ void loop()
     Serial.println("El estado anterior es: " + mensaje + " y el actual: " + actual + " cara: " + valor_cara);
     if (mensaje != actual)
     {
-      String mensajeHTTP = "https://www.medialab-uniovi.es/iot/datos_cube.php?m='" + (String)macStr + "'&e=" + valor_cara;
+      String mensajeHTTP = "https://www.medialab-uniovi.es/iot/datos_cube.php?m='" + (String)macStr + "&e=" + valor_cara + "&b=" + 50;
       http.begin(mensajeHTTP);
       int httpCode = http.GET();
       Serial.println(mensajeHTTP);
