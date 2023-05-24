@@ -635,6 +635,9 @@ void loop()
     // y enviar los datos a la base de datos
     if (trabajoRealizado)
     {
+      digitalWrite(led_r, HIGH);
+      digitalWrite(led_g, LOW);
+      digitalWrite(led_b, HIGH);
       trabajoRealizado = false;
       String mensaje = preferences.getString("estadoAnterior", "Ninguno");
       Serial.println("El estado anterior es: " + mensaje + " y el actual: " + actual + " cara: " + valor_cara);
