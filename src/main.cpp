@@ -23,6 +23,12 @@
 
 Preferences preferences;
 
+// Convertidor Analogico-Digital
+Adafruit_ADS1115 ads;
+
+int16_t adc0;
+#define ADS1X15_ADDRESS (0x48) /// 1001 000 (ADDR = GND)
+
 int flag = false;
 int modoconfig = false;
 int iniconfig = false;
