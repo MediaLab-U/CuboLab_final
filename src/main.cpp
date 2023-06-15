@@ -297,6 +297,16 @@ void setup()
       break;
       // esp_restart();
     }
+    //////////////////////////////////////////////////
+    // Convertidor Analogico-Digital
+    ads.begin();
+
+    if (!ads.begin())
+    {
+      Serial.println("Failed to initialize ADS.");
+      while (1)
+        ;
+    }
   }
 
   digitalWrite(led_g, HIGH);
