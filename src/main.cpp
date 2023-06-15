@@ -80,77 +80,83 @@ void cierreconfig()
   timer.detach();
 }
 
-void handleImage() {
+void handleImage()
+{
   File imageFile = LittleFS.open("/cubolab.jpg", "r");
-  if (imageFile) {
+  if (imageFile)
+  {
     server.streamFile(imageFile, "image/jpg");
     imageFile.close();
   }
 }
 
-void handleGif() {
+void handleGif()
+{
   File imageFile1 = LittleFS.open("/carga.gif", "r");
-  if (imageFile1) {
+  if (imageFile1)
+  {
     server.streamFile(imageFile1, "image/gif");
     imageFile1.close();
   }
 }
 
-void escanredes() {
-    Serial.println("Iniciando lectura de redes");
-   // delay(1000); // Agregar un retraso de 1 segundo
+void escanredes()
+{
+  Serial.println("Iniciando lectura de redes");
+  // delay(1000); // Agregar un retraso de 1 segundo
   int numredes = WiFi.scanNetworks();
   Serial.println(numredes);
 
-  
-    for (int i = 0; i < numredes; i++) {
-      String ssidd = WiFi.SSID(i);
-      Serial.print(".");
-      listaredes += "<li><a href='/select?ssid=" + ssidd + "'>" + ssidd + "</a></li>";
-      Serial.print("Leyendo red: ");
-      Serial.println(ssidd);
-    
+  for (int i = 0; i < numredes; i++)
+  {
+    String ssidd = WiFi.SSID(i);
+    Serial.print(".");
+    listaredes += "<li><a href='/select?ssid=" + ssidd + "'>" + ssidd + "</a></li>";
+    Serial.print("Leyendo red: ");
+    Serial.println(ssidd);
   }
 
   Serial.println("Finalizado lectura");
-  
+
   scanningComplete = true;
- // wifiScanCompleted = true;
+  // wifiScanCompleted = true;
   wifiScanTicker.detach();
 }
 
-void scanNetworks() {
-    
+void scanNetworks()
+{
+
   wifiScanTicker.detach();
   scanNetworksAsync();
 }
 
 ///////////////////////////////////////////////
-void handleRoot() 
+void handleRoot()
 {
-  if (scanningComplete) {
+  if (scanningComplete)
+  {
     // Redireccionar a la lista de redes
     String html = "<html><body>"
-                "<img src='/cubolab.jpg' width='100' height='100'>"
-                "<h1>Redes WiFi disponibles:</h1>"
-                "<ul>" + listaredes + "</ul>"
-                "</body></html>";
+                  "<img src='/cubolab.jpg' width='100' height='100'>"
+                  "<h1>Redes WiFi disponibles:</h1>"
+                  "<ul>" +
+                  listaredes + "</ul>"
+                               "</body></html>";
 
-  server.send(200, "text/html", html);
-  } else {
+    server.send(200, "text/html", html);
+  }
+  else
+  {
     // Enviar la página de carga
     server.sendHeader("Refresh", "10");
     server.send(200, "text/html", "<html><body><h1>Cargando...</h1><img src='/carga.gif'></body></html>");
 
     delay(2000); // Agregar un retraso de 1 segundo
 
-    escanredes();//ejecutar función escanear redes
+    escanredes(); // ejecutar función escanear redes
   }
-
 }
 ////////////////////////////////////////////////////////////
-
-
 
 void handleSelect()
 {
@@ -202,7 +208,7 @@ void setup()
   mpu.begin();
   preferences.begin("myPreferences", false);
 
-  //sistema de archivos para imagenes de la pagina de config
+  // sistema de archivos para imagenes de la pagina de config
   LittleFS.begin();
 
   // Comenzar conexión I2C
@@ -210,7 +216,7 @@ void setup()
 
   // Wire.beginTransmission(MPU6050_I2C_ADDRESS);
   // Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
-  //WiFi.scanNetworks(onScanComplete);
+  // WiFi.scanNetworks(onScanComplete);
 
   // Conexión a la red WiFi
   ssid1 = preferences.getString("ssid", "medialab");
@@ -276,17 +282,17 @@ void setup()
       delay(100);
       server.on("/carga.gif", handleGif);
       server.on("/", handleRoot);
-      //server.on("/redes.html", handleRedes);
+      // server.on("/redes.html", handleRedes);
       server.on("/select", handleSelect);
       server.on("/save", handleSave);
       server.on("/cubolab.jpg", handleImage);
-      
-      //server.on("/gif.js", handleGifJS);
+
+      // server.on("/gif.js", handleGifJS);
 
       server.begin();
 
       Serial.println("Modo punto de acceso iniciado");
-      //timer.attach(90.0, cierreconfig); //tiempo en segundos
+      // timer.attach(90.0, cierreconfig); //tiempo en segundos
       modoconfig = true;
       break;
       // esp_restart();
@@ -418,7 +424,7 @@ void loop()
   //  Código indicador de batería//
   /*****************************/
 
-  if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)  //entrar en modo config cuando se conecta al cargador
+  if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
   {
     WiFi.disconnect(true);
     WiFi.softAP(ssid, password);
@@ -429,38 +435,47 @@ void loop()
     server.on("/save", handleSave);
 
     server.begin();
-    modoconfig = true; // variable que evalua el estado de config
-    iniconfig = true; // variable para entrar una sola vez en modo config al ser conectado
-    timer.attach(90.0, cierreconfig); //tiempo en segundos, al terminar ejecutará la funcion cierreconfig
+    modoconfig = true;                // variable que evalua el estado de config
+    iniconfig = true;                 // variable para entrar una sola vez en modo config al ser conectado
+    timer.attach(90.0, cierreconfig); // tiempo en segundos, al terminar ejecutará la funcion cierreconfig
     Serial.println("Modo punto de acceso iniciado");
-  } else if (digitalRead(pin_tension) == LOW && iniconfig == true)
+  }
+  else if (digitalRead(pin_tension) == LOW && iniconfig == true)
   {
-    iniconfig = false; //cierre de la variable de inicio al ser desconectado
+    iniconfig = false; // cierre de la variable de inicio al ser desconectado
   }
   if (WiFi.status() == WL_CONNECTED && modoconfig == false)
   {
-    int valor_actual = analogRead(analog_input); // leemos el valor analógico presente en el pin
-    float v_real = (valor_actual * (5.00 / 1023.00)) * 2.8;
-    Serial.println(digitalRead(GPIO_NUM_4));
-    Serial.println(v_real);
-
-    if (v_real < 12 && v_real >= 10)
+    adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
+    if (adc0 >= 100)
     {
+      adc0 = 100;
+    }
+    else if (adc0 <= 0)
+    {
+      adc0 = 0;
+    }
+
+    switch (adc0)
+    {
+    case 0 ... 30:
       digitalWrite(led_r, LOW);
       digitalWrite(led_g, HIGH);
       digitalWrite(led_b, HIGH);
-    }
-    else if (v_real >= 12 && v_real < 14)
-    {
+      Serial.println("led rojo encendido");
+      break;
+    case 31 ... 80:
       digitalWrite(led_r, HIGH);
       digitalWrite(led_g, LOW);
       digitalWrite(led_b, LOW);
-    }
-    else if (v_real >= 14)
-    {
+      Serial.println("led azul encendido");
+      break;
+    default:
       digitalWrite(led_r, HIGH);
       digitalWrite(led_g, LOW);
       digitalWrite(led_b, HIGH);
+      Serial.println("led verde encendico");
+      break;
     }
     /***********************/
     // Cierre código indicador de batería
