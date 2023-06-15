@@ -10,6 +10,10 @@
 #include <WebServer.h>
 #include "ticker.h"
 #include <LITTLEFS.h>
+//Convertidor Analogico-Digital y comunicacion I2C
+#include <Adafruit_I2CDevice.h>
+#include <Adafruit_ADS1X15.h>
+#include <SPI.h>
 
 #define led_g 26
 #define led_b 25
