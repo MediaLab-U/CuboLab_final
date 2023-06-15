@@ -9,6 +9,7 @@
 #include "I2Cdev.h"
 #include <WebServer.h>
 #include "ticker.h"
+#include <LITTLEFS.h>
 
 #define led_g 26
 #define led_b 25
@@ -24,6 +25,7 @@ Preferences preferences;
 
 int flag = false;
 int modoconfig = false;
+int iniconfig = false;
 int voltaje;
 const char *ssid = "ConfigCUBO";
 const char *password = "cubolab1234";
@@ -33,11 +35,18 @@ String cuboPassword = "";
 String ssid1 = "";
 String password1 = "";
 
+String listaredes = "";
+int numredes;
+
+bool wifiScanCompleted = false;
+bool scanningComplete = false;
+
 WebServer server(80);
 
 HTTPClient http;
 
 Ticker timer;
+Ticker wifiScanTicker;
 
 char macStr[18];
 byte mac[6];
@@ -49,7 +58,7 @@ double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
 
-void timerCallback()
+void cierreconfig()
 {
   // Código a ejecutar cuando se alcance el tiempo deseado
   //     WiFi.disconnect(true);
@@ -71,39 +80,83 @@ void timerCallback()
   timer.detach();
 }
 
-void handleRoot()
-{
+void handleImage() {
+  File imageFile = LittleFS.open("/cubolab.jpg", "r");
+  if (imageFile) {
+    server.streamFile(imageFile, "image/jpg");
+    imageFile.close();
+  }
+}
 
-  String listaredes = "";
+void handleGif() {
+  File imageFile1 = LittleFS.open("/carga.gif", "r");
+  if (imageFile1) {
+    server.streamFile(imageFile1, "image/gif");
+    imageFile1.close();
+  }
+}
+
+void escanredes() {
+    Serial.println("Iniciando lectura de redes");
+   // delay(1000); // Agregar un retraso de 1 segundo
   int numredes = WiFi.scanNetworks();
+  Serial.println(numredes);
 
-  for (int i = 0; i < numredes; i++)
-  {
-    String ssidd = WiFi.SSID(i);
-    Serial.print(".");
-    listaredes += "<li><a href='/select?ssid=" + ssidd + "'>" + ssidd + "</a></li>";
+  
+    for (int i = 0; i < numredes; i++) {
+      String ssidd = WiFi.SSID(i);
+      Serial.print(".");
+      listaredes += "<li><a href='/select?ssid=" + ssidd + "'>" + ssidd + "</a></li>";
+      Serial.print("Leyendo red: ");
+      Serial.println(ssidd);
+    
   }
 
-  String html = "<html><body>"
-                //"<img src='/sensor01.jpg'>"
+  Serial.println("Finalizado lectura");
+  
+  scanningComplete = true;
+ // wifiScanCompleted = true;
+  wifiScanTicker.detach();
+}
+
+void scanNetworks() {
+    
+  wifiScanTicker.detach();
+  scanNetworksAsync();
+}
+
+///////////////////////////////////////////////
+void handleRoot() 
+{
+  if (scanningComplete) {
+    // Redireccionar a la lista de redes
+    String html = "<html><body>"
+                "<img src='/cubolab.jpg' width='100' height='100'>"
                 "<h1>Redes WiFi disponibles:</h1>"
-                "<ul>" +
-                listaredes + "</ul>"
-                             "</body></html>";
+                "<ul>" + listaredes + "</ul>"
+                "</body></html>";
 
   server.send(200, "text/html", html);
+  } else {
+    // Enviar la página de carga
+    server.sendHeader("Refresh", "10");
+    server.send(200, "text/html", "<html><body><h1>Cargando...</h1><img src='/carga.gif'></body></html>");
+
+    delay(2000); // Agregar un retraso de 1 segundo
+
+    escanredes();//ejecutar función escanear redes
+  }
+
 }
+////////////////////////////////////////////////////////////
+
+
 
 void handleSelect()
 {
   cuboSSID = server.arg("ssid");
   server.send(200, "text/html", "SSID seleccionado: " + cuboSSID + "\nPor favor, ingresa la contraseña correspondiente: <form method='POST' action='/save'><input type='password' name='password'><input type='submit' value='Guardar'></form>");
-  //   String html = "<html><body>"
-  //               "<h1>Redes WiFi disponibles:</h1>"
-  //               "<ul>" + listaredes + "</ul>"
-  //               "</body></html>";
 
-  // server.send(200, "text/html", html);
   Serial.println("ssid guardado");
 }
 
@@ -149,11 +202,15 @@ void setup()
   mpu.begin();
   preferences.begin("myPreferences", false);
 
+  //sistema de archivos para imagenes de la pagina de config
+  LittleFS.begin();
+
   // Comenzar conexión I2C
   Wire.begin(SDA_PIN, SCL_PIN);
 
   // Wire.beginTransmission(MPU6050_I2C_ADDRESS);
   // Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
+  //WiFi.scanNetworks(onScanComplete);
 
   // Conexión a la red WiFi
   ssid1 = preferences.getString("ssid", "medialab");
@@ -206,7 +263,7 @@ void setup()
 
     x = x + 1;
     Serial.print(x);
-    if (x == 20)
+    if (x == 10)
     {
       digitalWrite(led_g, HIGH);
       digitalWrite(led_r, HIGH);
@@ -217,15 +274,19 @@ void setup()
       WiFi.disconnect(true);
       WiFi.softAP(ssid, password);
       delay(100);
-
+      server.on("/carga.gif", handleGif);
       server.on("/", handleRoot);
+      //server.on("/redes.html", handleRedes);
       server.on("/select", handleSelect);
       server.on("/save", handleSave);
+      server.on("/cubolab.jpg", handleImage);
+      
+      //server.on("/gif.js", handleGifJS);
 
       server.begin();
 
       Serial.println("Modo punto de acceso iniciado");
-      timer.attach(30.0, timerCallback);
+      //timer.attach(90.0, cierreconfig); //tiempo en segundos
       modoconfig = true;
       break;
       // esp_restart();
@@ -235,20 +296,6 @@ void setup()
   digitalWrite(led_g, HIGH);
   digitalWrite(led_r, HIGH);
   digitalWrite(led_b, HIGH);
-
-  // Serial.print("Entrando en modo AP...");
-  /////
-  // WiFi.disconnect(true);
-  // WiFi.softAP(ssid, password);
-  // delay(100);
-
-  // server.on("/", handleRoot);
-  // server.on("/select", handleSelect);
-  // server.on("/save", handleSave);
-
-  // server.begin();
-
-  // Serial.println("Modo punto de acceso iniciado");
 
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -370,7 +417,8 @@ void loop()
   // Serial.println(macStr);
   //  Código indicador de batería//
   /*****************************/
-  if (digitalRead(pin_tension) == HIGH && modoconfig == false)
+
+  if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)  //entrar en modo config cuando se conecta al cargador
   {
     WiFi.disconnect(true);
     WiFi.softAP(ssid, password);
@@ -381,9 +429,13 @@ void loop()
     server.on("/save", handleSave);
 
     server.begin();
-    modoconfig = true;
-    timer.attach(30.0, timerCallback);
+    modoconfig = true; // variable que evalua el estado de config
+    iniconfig = true; // variable para entrar una sola vez en modo config al ser conectado
+    timer.attach(90.0, cierreconfig); //tiempo en segundos, al terminar ejecutará la funcion cierreconfig
     Serial.println("Modo punto de acceso iniciado");
+  } else if (digitalRead(pin_tension) == LOW && iniconfig == true)
+  {
+    iniconfig = false; //cierre de la variable de inicio al ser desconectado
   }
   if (WiFi.status() == WL_CONNECTED && modoconfig == false)
   {
@@ -391,24 +443,6 @@ void loop()
     float v_real = (valor_actual * (5.00 / 1023.00)) * 2.8;
     Serial.println(digitalRead(GPIO_NUM_4));
     Serial.println(v_real);
-
-    // while (pin_tension == HIGH)
-    // {
-    //   WiFi.disconnect(true);
-    //   WiFi.softAP(ssid, password);
-    //   delay(10);
-
-    //   server.on("/", handleRoot);
-    //   server.on("/select", handleSelect);
-    //   server.on("/save", handleSave);
-
-    //   server.begin();
-
-    //   Serial.println("Modo punto de acceso iniciado");
-
-    //   timer.attach(30.0, timerCallback);
-
-    // }
 
     if (v_real < 12 && v_real >= 10)
     {
@@ -601,16 +635,14 @@ void loop()
     }
     /***********************/
 
-    // Despertar al ESP32 cuando se conecte a la red
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
-
     // Apagar el ESP32 cuando no tenga suficiente batería
     if (v_real <= 11 && digitalRead(GPIO_NUM_4) != 1)
     {
       Serial.println("No tengo tension");
       esp_deep_sleep_start();
     }
-
+    // Despertar al ESP32 cuando se conecte a la red
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
     while (digitalRead(GPIO_NUM_4) == 1)
     {
       int valor_actual1 = analogRead(analog_input); // leemos el valor analógico presente en el pin
@@ -635,9 +667,6 @@ void loop()
     // y enviar los datos a la base de datos
     if (trabajoRealizado)
     {
-      digitalWrite(led_r, HIGH);
-      digitalWrite(led_g, LOW);
-      digitalWrite(led_b, HIGH);
       trabajoRealizado = false;
       String mensaje = preferences.getString("estadoAnterior", "Ninguno");
       Serial.println("El estado anterior es: " + mensaje + " y el actual: " + actual + " cara: " + valor_cara);
@@ -664,9 +693,9 @@ void loop()
       preferences.end();
 
       // Apagar el LED
-      digitalWrite(led_g, HIGH);
-      digitalWrite(led_r, HIGH);
-      digitalWrite(led_b, HIGH);
+      // digitalWrite(led_g, HIGH);
+      // digitalWrite(led_r, HIGH);
+      // digitalWrite(led_b, HIGH);
       // Código para enviar a dormi el SP32 y despertarlo cada 15 minutos
       Serial.println("Me voy a dormir");
 
