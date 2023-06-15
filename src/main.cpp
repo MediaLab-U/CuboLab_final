@@ -10,9 +10,9 @@
 #include <WebServer.h>
 #include "ticker.h"
 #include <LITTLEFS.h>
-//Convertidor Analogico-Digital y comunicacion I2C
-#include <Adafruit_I2CDevice.h>
+// Convertidor Analogico-Digital y comunicacion I2C
 #include <Adafruit_ADS1X15.h>
+#include <Adafruit_I2CDevice.h>
 #include <SPI.h>
 
 #define led_g 26
@@ -133,12 +133,12 @@ void escanredes()
   wifiScanTicker.detach();
 }
 
-void scanNetworks()
-{
+// void scanNetworks()
+// {
 
-  wifiScanTicker.detach();
-  scanNetworksAsync();
-}
+//   wifiScanTicker.detach();
+//   scanNetworksAsync();
+// }
 
 ///////////////////////////////////////////////
 void handleRoot()
@@ -437,6 +437,41 @@ double Ctimer(void)
   return tm.tv_sec + tm.tv_usec / 1.0E6;
 }
 
+void battery()
+{
+  adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
+  if (adc0 >= 100)
+  {
+    adc0 = 100;
+  }
+  else if (adc0 <= 0)
+  {
+    adc0 = 0;
+  }
+
+  switch (adc0)
+  {
+  case 0 ... 30:
+    digitalWrite(led_r, LOW);
+    digitalWrite(led_g, HIGH);
+    digitalWrite(led_b, HIGH);
+    Serial.println("led rojo encendido");
+    break;
+  case 31 ... 80:
+    digitalWrite(led_r, HIGH);
+    digitalWrite(led_g, LOW);
+    digitalWrite(led_b, LOW);
+    Serial.println("led azul encendido");
+    break;
+  default:
+    digitalWrite(led_r, HIGH);
+    digitalWrite(led_g, LOW);
+    digitalWrite(led_b, HIGH);
+    Serial.println("led verde encendico");
+    break;
+  }
+}
+
 void loop()
 {
   server.handleClient();
@@ -466,37 +501,7 @@ void loop()
   }
   if (WiFi.status() == WL_CONNECTED && modoconfig == false)
   {
-    adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
-    if (adc0 >= 100)
-    {
-      adc0 = 100;
-    }
-    else if (adc0 <= 0)
-    {
-      adc0 = 0;
-    }
-
-    switch (adc0)
-    {
-    case 0 ... 30:
-      digitalWrite(led_r, LOW);
-      digitalWrite(led_g, HIGH);
-      digitalWrite(led_b, HIGH);
-      Serial.println("led rojo encendido");
-      break;
-    case 31 ... 80:
-      digitalWrite(led_r, HIGH);
-      digitalWrite(led_g, LOW);
-      digitalWrite(led_b, LOW);
-      Serial.println("led azul encendido");
-      break;
-    default:
-      digitalWrite(led_r, HIGH);
-      digitalWrite(led_g, LOW);
-      digitalWrite(led_b, HIGH);
-      Serial.println("led verde encendico");
-      break;
-    }
+    battery();
     /***********************/
     // Cierre código indicador de batería
 
@@ -671,7 +676,7 @@ void loop()
     /***********************/
 
     // Apagar el ESP32 cuando no tenga suficiente batería
-    if (v_real <= 11 && digitalRead(GPIO_NUM_4) != 1)
+    if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
     {
       Serial.println("No tengo tension");
       esp_deep_sleep_start();
@@ -680,12 +685,11 @@ void loop()
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
     while (digitalRead(GPIO_NUM_4) == 1)
     {
-      int valor_actual1 = analogRead(analog_input); // leemos el valor analógico presente en el pin
-      float v_real1 = (valor_actual1 * (5.00 / 1023.00)) * 2.8;
+      adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
       analogWrite(led_r, 150);
       analogWrite(led_g, 30);
       analogWrite(led_b, HIGH);
-      if (v_real1 >= 14)
+      if (adc0 >= 95)
       {
         digitalWrite(led_r, HIGH);
         digitalWrite(led_g, LOW);
