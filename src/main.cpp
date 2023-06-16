@@ -15,8 +15,8 @@
 #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
 
-#define led_g 26
-#define led_b 25
+#define led_g 25
+#define led_b 26
 #define led_r 27
 #define analog_input 35
 // Pines y dirección I2C
@@ -214,7 +214,11 @@ void IRAM_ATTR handleInterrupt()
 void setup()
 {
   Serial.begin(115200);
+  // Convertidor Analogico-Digital
+  ads.begin();
+  //
   Wire.begin();
+  // Acelerometro
   mpu.begin();
   preferences.begin("myPreferences", false);
 
@@ -308,8 +312,6 @@ void setup()
       // esp_restart();
     }
     //////////////////////////////////////////////////
-    // Convertidor Analogico-Digital
-    ads.begin();
 
     if (!ads.begin())
     {
@@ -455,19 +457,16 @@ void battery()
     digitalWrite(led_r, LOW);
     digitalWrite(led_g, HIGH);
     digitalWrite(led_b, HIGH);
-    Serial.println("led rojo encendido");
     break;
   case 31 ... 80:
     digitalWrite(led_r, HIGH);
-    digitalWrite(led_g, LOW);
+    digitalWrite(led_g, HIGH);
     digitalWrite(led_b, LOW);
-    Serial.println("led azul encendido");
     break;
   default:
     digitalWrite(led_r, HIGH);
     digitalWrite(led_g, LOW);
     digitalWrite(led_b, HIGH);
-    Serial.println("led verde encendico");
     break;
   }
 }
@@ -478,7 +477,6 @@ void loop()
   // Serial.println(macStr);
   //  Código indicador de batería//
   /*****************************/
-
   if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
   {
     WiFi.disconnect(true);
@@ -674,7 +672,7 @@ void loop()
       }
     }
     /***********************/
-
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
     // Apagar el ESP32 cuando no tenga suficiente batería
     if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
     {
@@ -682,7 +680,7 @@ void loop()
       esp_deep_sleep_start();
     }
     // Despertar al ESP32 cuando se conecte a la red
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
     while (digitalRead(GPIO_NUM_4) == 1)
     {
       adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
