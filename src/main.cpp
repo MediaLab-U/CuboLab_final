@@ -42,8 +42,8 @@ const char *password = "cubolab1234";
 // Variables donde se guardan los datos del wifi
 String cuboSSID = "";
 String cuboPassword = "";
-// String ssid1 = "";
-// String password1 = "";
+String ssid1 = "";
+String password1 = "";
 
 String listaredes = "";
 int numredes;
@@ -57,13 +57,13 @@ HTTPClient http;
 
 Ticker timer;
 Ticker wifiScanTicker;
-Ticker restart;
 
 char macStr[18];
 byte mac[6];
 
 Adafruit_MPU6050 mpu;
 int valor_cara = 0;
+int x = 0;
 double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
@@ -80,8 +80,8 @@ void cierreconfig()
   if (modoconfig == true)
   {
     WiFi.disconnect(true);
-    String ssid1 = preferences.getString("ssid", "medialab");
-    String password1 = preferences.getString("pass", "medialab");
+    ssid1 = preferences.getString("ssid", "medialab");
+    password1 = preferences.getString("pass", "medialab");
     WiFi.begin(ssid1.c_str(), password1.c_str());
     Serial.println("No cambios config. Conectando wifi anterior..." + ssid1 + password1);
     modoconfig = false;
@@ -129,7 +129,7 @@ void escanredes()
   Serial.println("Finalizado lectura");
 
   scanningComplete = true;
-  // wifiScanCompleted = true;
+  wifiScanCompleted = true;
   wifiScanTicker.detach();
 }
 
@@ -181,96 +181,31 @@ void handleSave()
   cuboPassword = server.arg("password");
   server.send(200, "text/plain", "SSID y contraseña guardados: " + cuboSSID + ", " + cuboPassword);
   delay(2000);
+
   WiFi.disconnect(true);
   WiFi.begin(cuboSSID.c_str(), cuboPassword.c_str());
-  int x = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
-    digitalWrite(led_b, LOW);
     digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, HIGH);
-    delay(800);
+    digitalWrite(led_r, LOW);
     digitalWrite(led_b, HIGH);
+    delay(10000);
     digitalWrite(led_g, HIGH);
     digitalWrite(led_r, HIGH);
-    delay(800);
-
-    if (WiFi.status() == WL_CONNECTED)
-    {
-      preferences.putString("ssid", cuboSSID);
-      preferences.putString("pass", cuboPassword);
-      timer.detach();
-      break;
-    }
-
-    x = x + 1;
-    Serial.print(x);
-    if (x == 10)
-    {
-      esp_restart();
-      break;c
-    }
+    digitalWrite(led_b, HIGH);
+    Serial.println("No se ha podido conectar a la red WIFI");
+    esp_deep_sleep_start();
   }
 
-  // trywifi(cuboSSID, cuboPassword);
+  preferences.putString("ssid", cuboSSID);
+  preferences.putString("pass", cuboPassword);
 
-  // Serial.println("");
-  // Serial.println("Conexión establecida");
-  // Serial.print("Dirección IP: ");
-  // Serial.println(WiFi.localIP());
-  // modoconfig = false;
-  // timer.detach();
-}
-
-void trywifi(String SSID, String Password)
-{
-  WiFi.disconnect(true);
-  WiFi.begin(SSID.c_str(), Password.c_str());
-  int x = 0;
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    digitalWrite(led_b, LOW);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, HIGH);
-    delay(800);
-    digitalWrite(led_b, HIGH);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, HIGH);
-    delay(800);
-
-    if (WiFi.status() == WL_CONNECTED)
-    {
-      break;
-    }
-
-    x = x + 1;
-    Serial.print(x);
-    if (x == 10)
-    {
-      digitalWrite(led_g, HIGH);
-      digitalWrite(led_r, HIGH);
-      digitalWrite(led_b, HIGH);
-      Serial.println("No se ha podido conectar a la red WIFI");
-      // Serial.print("Entrando en modo AP...");
-      // /////
-      WiFi.disconnect(true);
-      WiFi.softAP(ssid, password);
-      delay(100);
-      server.on("/carga.gif", handleGif);
-      server.on("/", handleRoot);
-      // server.on("/redes.html", handleRedes);
-      server.on("/select", handleSelect);
-      server.on("/save", handleSave);
-      server.on("/cubolab.jpg", handleImage);
-
-      // server.on("/gif.js", handleGifJS);
-
-      server.begin();
-
-      Serial.println("Modo punto de acceso iniciado");
-      timer.attach(90, cierreconfig);
-    }
-  }
+  Serial.println("");
+  Serial.println("Conexión establecida");
+  Serial.print("Dirección IP: ");
+  Serial.println(WiFi.localIP());
+  modoconfig = false;
+  timer.detach();
 }
 
 void IRAM_ATTR handleInterrupt()
@@ -286,12 +221,9 @@ void IRAM_ATTR handleInterrupt()
 void setup()
 {
   Serial.begin(115200);
-  // Convertidor Analogico-Digital
-  ads.begin();
-  //
   Wire.begin();
-  // Acelerometro
   mpu.begin();
+  ads.begin();
   preferences.begin("myPreferences", false);
 
   // sistema de archivos para imagenes de la pagina de config
@@ -305,11 +237,9 @@ void setup()
   // WiFi.scanNetworks(onScanComplete);
 
   // Conexión a la red WiFi
-  String ssid1 = preferences.getString("ssid", "medialab");
-  String password1 = preferences.getString("pass", "medialab");
-  // WiFi.begin(ssid1.c_str(), password1.c_str());
-
-  trywifi(ssid1, password1);
+  ssid1 = preferences.getString("ssid", "medialab");
+  password1 = preferences.getString("pass", "medialab");
+  WiFi.begin(ssid1.c_str(), password1.c_str());
 
   // Configuración para dejar activos los pines de batería
   // Configurar los pines 4, 5 y 6 como entrada
@@ -375,132 +305,168 @@ void setup()
   //     server.on("/save", handleSave);
   //     server.on("/cubolab.jpg", handleImage);
 
-  // server.on("/gif.js", handleGifJS);
+  //     // server.on("/gif.js", handleGifJS);
 
-  //   server.begin();
+  //     server.begin();
 
-  //   Serial.println("Modo punto de acceso iniciado");
-  //   // timer.attach(90.0, cierreconfig); //tiempo en segundos
-  //   modoconfig = true;
-  //   break;
-  //   // esp_restart();
-  // }
-  //////////////////////////////////////////////////
+  //     Serial.println("Modo punto de acceso iniciado");
+  //     // timer.attach(90.0, cierreconfig); //tiempo en segundos
+  //     modoconfig = true;
+  //     break;
+  //     // esp_restart();
+  //   }
 
-  if (!ads.begin())
+  while (WiFi.status() != WL_CONNECTED)
   {
-    Serial.println("Failed to initialize ADS.");
-    while (1)
-      ;
-  }
+    digitalWrite(led_b, LOW);
+    digitalWrite(led_g, HIGH);
+    digitalWrite(led_r, HIGH);
+    delay(800);
+    digitalWrite(led_b, HIGH);
+    digitalWrite(led_g, HIGH);
+    digitalWrite(led_r, HIGH);
+    delay(800);
 
-digitalWrite(led_g, HIGH);
-digitalWrite(led_r, HIGH);
-digitalWrite(led_b, HIGH);
-
-if (WiFi.status() == WL_CONNECTED)
-{
-  Serial.println("Conexión exitosa");
-
-  // Obtención de la dirección MAC del ESP32
-  WiFi.macAddress(mac);
-
-  // Conversión de la dirección MAC a una cadena de caracteres
-  sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  mac[0] = 0;
-
-  while (!Serial)
-    delay(1000); // will pause Zero, Leonardo, etc until serial console opens
-
-  Serial.println("Adafruit MPU6050 test!");
-
-  // Try to initialize!
-  if (!mpu.begin())
-  {
-    Serial.println("Failed to find MPU6050 chip");
-    while (1)
+    if (WiFi.status() == WL_CONNECTED)
     {
-      delay(1000);
-      Serial.println("Reiniciando ESP32");
-      esp_restart();
+      break;
+    }
+
+    x = x + 1;
+    Serial.print(x);
+    if (x == 10)
+    {
+      digitalWrite(led_g, HIGH);
+      digitalWrite(led_r, LOW);
+      digitalWrite(led_b, HIGH);
+      delay(10000);
+      digitalWrite(led_g, HIGH);
+      digitalWrite(led_r, HIGH);
+      digitalWrite(led_b, HIGH);
+      Serial.println("No se ha podido conectar a la red WIFI");
+      esp_deep_sleep_start();
+      // esp_restart();
+    }
+    //////////////////////////////////////////////////
+    // Convertidor Analogico-Digital
+    ads.begin();
+
+    if (!ads.begin())
+    {
+      Serial.println("Failed to initialize ADS.");
+      while (1)
+        ;
     }
   }
-  Serial.println("MPU6050 Found!");
 
-  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-  Serial.println("seleccionado rango");
-  Serial.print("Accelerometer range set to: ");
-  switch (mpu.getAccelerometerRange())
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_r, HIGH);
+  digitalWrite(led_b, HIGH);
+
+  if (WiFi.status() == WL_CONNECTED)
   {
-  case MPU6050_RANGE_2_G:
-    Serial.println("+-2G");
-    break;
-  case MPU6050_RANGE_4_G:
-    Serial.println("+-4G");
-    break;
-  case MPU6050_RANGE_8_G:
-    Serial.println("+-8G");
-    break;
-  case MPU6050_RANGE_16_G:
-    Serial.println("+-16G");
-    break;
-  }
-  mpu.setGyroRange(MPU6050_RANGE_2000_DEG);
-  Serial.print("Gyro range set to: ");
-  switch (mpu.getGyroRange())
-  {
-  case MPU6050_RANGE_250_DEG:
-    Serial.println("+- 250 deg/s");
-    break;
-  case MPU6050_RANGE_500_DEG:
-    Serial.println("+- 500 deg/s");
-    break;
-  case MPU6050_RANGE_1000_DEG:
-    Serial.println("+- 1000 deg/s");
-    break;
-  case MPU6050_RANGE_2000_DEG:
-    Serial.println("+- 2000 deg/s");
-    break;
-  }
+    Serial.println("Conexión exitosa");
 
-  mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);
-  Serial.print("Filter bandwidth set to: ");
-  switch (mpu.getFilterBandwidth())
-  {
-  case MPU6050_BAND_260_HZ:
-    Serial.println("260 Hz");
-    break;
-  case MPU6050_BAND_184_HZ:
-    Serial.println("184 Hz");
-    break;
-  case MPU6050_BAND_94_HZ:
-    Serial.println("94 Hz");
-    break;
-  case MPU6050_BAND_44_HZ:
-    Serial.println("44 Hz");
-    break;
-  case MPU6050_BAND_21_HZ:
-    Serial.println("21 Hz");
-    break;
-  case MPU6050_BAND_10_HZ:
-    Serial.println("10 Hz");
-    break;
-  case MPU6050_BAND_5_HZ:
-    Serial.println("5 Hz");
-    break;
+    // Obtención de la dirección MAC del ESP32
+    WiFi.macAddress(mac);
+
+    // Conversión de la dirección MAC a una cadena de caracteres
+    sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    mac[0] = 0;
+
+    while (!Serial)
+      delay(1000); // will pause Zero, Leonardo, etc until serial console opens
+
+    Serial.println("Adafruit MPU6050 test!");
+
+    // Try to initialize!
+    if (!mpu.begin())
+    {
+      Serial.println("Failed to find MPU6050 chip");
+      while (1)
+      {
+        delay(1000);
+        Serial.println("Reiniciando ESP32");
+        esp_restart();
+      }
+    }
+    Serial.println("MPU6050 Found!");
+
+    mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+    Serial.println("seleccionado rango");
+    Serial.print("Accelerometer range set to: ");
+    switch (mpu.getAccelerometerRange())
+    {
+    case MPU6050_RANGE_2_G:
+      Serial.println("+-2G");
+      break;
+    case MPU6050_RANGE_4_G:
+      Serial.println("+-4G");
+      break;
+    case MPU6050_RANGE_8_G:
+      Serial.println("+-8G");
+      break;
+    case MPU6050_RANGE_16_G:
+      Serial.println("+-16G");
+      break;
+    }
+    mpu.setGyroRange(MPU6050_RANGE_2000_DEG);
+    Serial.print("Gyro range set to: ");
+    switch (mpu.getGyroRange())
+    {
+    case MPU6050_RANGE_250_DEG:
+      Serial.println("+- 250 deg/s");
+      break;
+    case MPU6050_RANGE_500_DEG:
+      Serial.println("+- 500 deg/s");
+      break;
+    case MPU6050_RANGE_1000_DEG:
+      Serial.println("+- 1000 deg/s");
+      break;
+    case MPU6050_RANGE_2000_DEG:
+      Serial.println("+- 2000 deg/s");
+      break;
+    }
+
+    mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);
+    Serial.print("Filter bandwidth set to: ");
+    switch (mpu.getFilterBandwidth())
+    {
+    case MPU6050_BAND_260_HZ:
+      Serial.println("260 Hz");
+      break;
+    case MPU6050_BAND_184_HZ:
+      Serial.println("184 Hz");
+      break;
+    case MPU6050_BAND_94_HZ:
+      Serial.println("94 Hz");
+      break;
+    case MPU6050_BAND_44_HZ:
+      Serial.println("44 Hz");
+      break;
+    case MPU6050_BAND_21_HZ:
+      Serial.println("21 Hz");
+      break;
+    case MPU6050_BAND_10_HZ:
+      Serial.println("10 Hz");
+      break;
+    case MPU6050_BAND_5_HZ:
+      Serial.println("5 Hz");
+      break;
+    }
+
+    if (modoconfig == false)
+    {
+      mpu.setMotionInterrupt(true);
+      pinMode(14, INPUT_PULLUP);
+      attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING);
+      mpu.setMotionDetectionThreshold(1.0f); // deteccion de un cambio de gravedad en un incremento de 1m/s^2
+      mpu.setMotionDetectionDuration(2);
+
+      pinMode(4, INPUT_PULLUP);
+    }
+    // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
   }
-
-  Serial.println("");
-  delay(100);
-  mpu.setMotionInterrupt(true);
-  pinMode(14, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING);
-  mpu.setMotionDetectionThreshold(1.0f); // deteccion de un cambio de gravedad en un incremento de 1m/s^2
-  mpu.setMotionDetectionDuration(2);
-
-  pinMode(4, INPUT_PULLUP);
-  // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
-}
 }
 
 double Ctimer(void)
@@ -533,7 +499,7 @@ void battery()
     break;
   case 31 ... 80:
     digitalWrite(led_r, HIGH);
-    digitalWrite(led_g, HIGH);
+    digitalWrite(led_g, LOW);
     digitalWrite(led_b, LOW);
     break;
   default:
@@ -550,8 +516,12 @@ void loop()
   // Serial.println(macStr);
   //  Código indicador de batería//
   /*****************************/
+
   if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
   {
+    analogWrite(led_b, 19);
+    analogWrite(led_g, 130);
+    analogWrite(led_r, 255);
     WiFi.disconnect(true);
     WiFi.softAP(ssid, password);
     delay(100);
@@ -559,11 +529,12 @@ void loop()
     server.on("/", handleRoot);
     server.on("/select", handleSelect);
     server.on("/save", handleSave);
-
+    server.on("/carga.gif", handleGif);
+    server.on("/cubolab.jpg", handleImage);
     server.begin();
-    modoconfig = true;                // variable que evalua el estado de config
-    iniconfig = true;                 // variable para entrar una sola vez en modo config al ser conectado
-    timer.attach(90.0, cierreconfig); // tiempo en segundos, al terminar ejecutará la funcion cierreconfig
+    modoconfig = true;                 // variable que evalua el estado de config
+    iniconfig = true;                  // variable para entrar una sola vez en modo config al ser conectado
+    timer.attach(120.0, cierreconfig); // tiempo en segundos, al terminar ejecutará la funcion cierreconfig
     Serial.println("Modo punto de acceso iniciado");
   }
   else if (digitalRead(pin_tension) == LOW && iniconfig == true)
@@ -745,7 +716,7 @@ void loop()
       }
     }
     /***********************/
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+
     // Apagar el ESP32 cuando no tenga suficiente batería
     if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
     {
@@ -753,7 +724,7 @@ void loop()
       esp_deep_sleep_start();
     }
     // Despertar al ESP32 cuando se conecte a la red
-    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
     while (digitalRead(GPIO_NUM_4) == 1)
     {
       adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
