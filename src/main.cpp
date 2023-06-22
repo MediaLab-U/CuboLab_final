@@ -14,11 +14,14 @@
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
+//Buzzer
+#include <ezBuzzer.h>
 
 #define led_g 25
 #define led_b 26
 #define led_r 27
-#define analog_input 35
+//Buzzer
+#define buzzer_pin 35
 // Pines y dirección I2C
 #define SDA_PIN 21
 #define SCL_PIN 22
@@ -29,6 +32,9 @@ Preferences preferences;
 
 // Convertidor Analogico-Digital
 Adafruit_ADS1115 ads;
+
+//Buzzer classs
+ezBuzzer buzzer(buzzer_pin);
 
 int16_t adc0;
 #define ADS1X15_ADDRESS (0x48) /// 1001 000 (ADDR = GND)
@@ -63,13 +69,15 @@ byte mac[6];
 
 Adafruit_MPU6050 mpu;
 int valor_cara = 0;
-int x = 0;
 double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
 
 void cierreconfig()
 {
+  pinMode(led_g, OUTPUT);
+  pinMode(led_b, OUTPUT);
+  pinMode(led_r, OUTPUT);
   // Código a ejecutar cuando se alcance el tiempo deseado
   //     WiFi.disconnect(true);
   // WiFi.begin(cuboSSID.c_str(), cuboPassword.c_str());
@@ -79,6 +87,9 @@ void cierreconfig()
   // }
   if (modoconfig == true)
   {
+    digitalWrite(led_b, HIGH);
+    digitalWrite(led_g, HIGH);
+    digitalWrite(led_r, HIGH);
     WiFi.disconnect(true);
     ssid1 = preferences.getString("ssid", "medialab");
     password1 = preferences.getString("pass", "medialab");
@@ -176,34 +187,61 @@ void handleSelect()
   Serial.println("ssid guardado");
 }
 
+
 void handleSave()
 {
+  pinMode(led_g, OUTPUT);
+  pinMode(led_b, OUTPUT);
+  pinMode(led_r, OUTPUT);
+  digitalWrite(led_b, HIGH);
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_r, HIGH);
   cuboPassword = server.arg("password");
   server.send(200, "text/plain", "SSID y contraseña guardados: " + cuboSSID + ", " + cuboPassword);
   delay(2000);
-
   WiFi.disconnect(true);
   WiFi.begin(cuboSSID.c_str(), cuboPassword.c_str());
+  int x1 = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, LOW);
-    digitalWrite(led_b, HIGH);
-    delay(10000);
+    digitalWrite(led_b, LOW);
     digitalWrite(led_g, HIGH);
     digitalWrite(led_r, HIGH);
+    delay(800);
     digitalWrite(led_b, HIGH);
-    Serial.println("No se ha podido conectar a la red WIFI");
-    esp_deep_sleep_start();
+    digitalWrite(led_g, HIGH);
+    digitalWrite(led_r, HIGH);
+    delay(800);
+    x1 = x1 + 1;
+    Serial.print(x1);
+    if (x1 == 10)
+    {
+      analogWrite(led_b, 236);
+      analogWrite(led_g, 100);
+      analogWrite(led_r, 130);
+      Serial.println("No se ha podido conectar a la red WIFI");
+      WiFi.disconnect(true);
+      WiFi.softAP(ssid, password);
+      delay(100);
+      server.on("/carga.gif", handleGif);
+      server.on("/", handleRoot);
+      server.on("/select", handleSelect);
+      server.on("/save", handleSave);
+      server.on("/cubolab.jpg", handleImage);
+      server.begin();
+      Serial.println("Modo punto de acceso iniciado");
+      modoconfig = true;
+      break;
+    }
   }
 
   preferences.putString("ssid", cuboSSID);
   preferences.putString("pass", cuboPassword);
 
-  Serial.println("");
-  Serial.println("Conexión establecida");
-  Serial.print("Dirección IP: ");
-  Serial.println(WiFi.localIP());
+  // Serial.println("");
+  // Serial.println("Conexión establecida");
+  // Serial.print("Dirección IP: ");
+  // Serial.println(WiFi.localIP());
   modoconfig = false;
   timer.detach();
 }
@@ -261,7 +299,9 @@ void setup()
   digitalWrite(led_r, HIGH);
   digitalWrite(led_b, HIGH);
 
-  pinMode(analog_input, INPUT);
+
+  // DESPERTAR EL ESP CUANDO SE CONECTA A LA FUENTE DE ALIMENTACIÓN
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
 
   Serial.print("Conectando a la red WiFi.");
   delay(100);
@@ -315,7 +355,7 @@ void setup()
   //     break;
   //     // esp_restart();
   //   }
-
+  int x = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
     digitalWrite(led_b, LOW);
@@ -334,6 +374,12 @@ void setup()
 
     x = x + 1;
     Serial.print(x);
+
+    if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)
+    {
+      break;
+    }
+
     if (x == 10)
     {
       digitalWrite(led_g, HIGH);
@@ -345,7 +391,6 @@ void setup()
       digitalWrite(led_b, HIGH);
       Serial.println("No se ha podido conectar a la red WIFI");
       esp_deep_sleep_start();
-      // esp_restart();
     }
     //////////////////////////////////////////////////
     // Convertidor Analogico-Digital
@@ -499,7 +544,7 @@ void battery()
     break;
   case 31 ... 80:
     digitalWrite(led_r, HIGH);
-    digitalWrite(led_g, LOW);
+    digitalWrite(led_g, HIGH);
     digitalWrite(led_b, LOW);
     break;
   default:
@@ -512,6 +557,9 @@ void battery()
 
 void loop()
 {
+  //Loop del buzzer
+  buzzer.loop();
+  //  
   server.handleClient();
   // Serial.println(macStr);
   //  Código indicador de batería//
@@ -519,9 +567,9 @@ void loop()
 
   if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
   {
-    analogWrite(led_b, 19);
-    analogWrite(led_g, 130);
-    analogWrite(led_r, 255);
+    analogWrite(led_b, 236);
+    analogWrite(led_g, 100);
+    analogWrite(led_r, 130);
     WiFi.disconnect(true);
     WiFi.softAP(ssid, password);
     delay(100);
@@ -716,21 +764,18 @@ void loop()
       }
     }
     /***********************/
-
+    // // Despertar al ESP32 cuando se conecte a la red
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
     // Apagar el ESP32 cuando no tenga suficiente batería
     if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
     {
       Serial.println("No tengo tension");
       esp_deep_sleep_start();
     }
-    // Despertar al ESP32 cuando se conecte a la red
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
     while (digitalRead(GPIO_NUM_4) == 1)
     {
       adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
-      analogWrite(led_r, 150);
-      analogWrite(led_g, 30);
-      analogWrite(led_b, HIGH);
+      battery();
       if (adc0 >= 95)
       {
         digitalWrite(led_r, HIGH);
@@ -769,6 +814,7 @@ void loop()
           Serial.println("Error en la solicitud");
         }
       }
+
       preferences.putString("estadoAnterior", actual);
       Serial.println("El nuevo estado guardado en memoria no volátil es: " + preferences.getString("estadoAnterior", "Ninguno"));
       preferences.end();
