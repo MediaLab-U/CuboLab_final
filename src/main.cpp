@@ -36,8 +36,11 @@ Adafruit_ADS1115 ads;
 //Buzzer classs
 ezBuzzer buzzer(buzzer_pin);
 
+Adafruit_MPU6050 mpu;
+
 int16_t adc0;
 #define ADS1X15_ADDRESS (0x48) /// 1001 000 (ADDR = GND)
+#define 
 
 int flag = false;
 int modoconfig = false;
@@ -67,7 +70,6 @@ Ticker wifiScanTicker;
 char macStr[18];
 byte mac[6];
 
-Adafruit_MPU6050 mpu;
 int valor_cara = 0;
 double timeini, timefin;
 bool trabajoRealizado = false;
