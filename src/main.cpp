@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
-#include <Wire.h>
+// #include <Wire.h>
 #include <esp_sleep.h>
 #include <Preferences.h>
 #include <WiFi.h>
@@ -15,13 +15,13 @@
 #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
 //Buzzer
-#include <ezBuzzer.h>
+// #include <ezBuzzer.h>
 
-#define led_g 25
-#define led_b 26
+#define led_g 26
+#define led_b 25
 #define led_r 27
 //Buzzer
-#define buzzer_pin 35
+// #define buzzer_pin 35
 // Pines y dirección I2C
 #define SDA_PIN 21
 #define SCL_PIN 22
@@ -34,13 +34,13 @@ Preferences preferences;
 Adafruit_ADS1115 ads;
 
 //Buzzer classs
-ezBuzzer buzzer(buzzer_pin);
+// ezBuzzer buzzer(buzzer_pin);
 
 Adafruit_MPU6050 mpu;
 
 int16_t adc0;
-#define ADS1X15_ADDRESS (0x48) /// 1001 000 (ADDR = GND)
-#define 
+#define ADS1X15_ADDRESS (0x48) /// 1001 000 (ADDR = GND) ads1115 I2C adress
+#define MPU6050_I2C_ADDRESS 0x68 // I2C adress mpu
 
 int flag = false;
 int modoconfig = false;
@@ -261,7 +261,7 @@ void IRAM_ATTR handleInterrupt()
 void setup()
 {
   Serial.begin(115200);
-  Wire.begin();
+  // Wire.begin();
   mpu.begin();
   ads.begin();
   preferences.begin("myPreferences", false);
@@ -270,7 +270,7 @@ void setup()
   LittleFS.begin();
 
   // Comenzar conexión I2C
-  Wire.begin(SDA_PIN, SCL_PIN);
+  // Wire.begin(SDA_PIN, SCL_PIN);
 
   // Wire.beginTransmission(MPU6050_I2C_ADDRESS);
   // Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
@@ -311,52 +311,7 @@ void setup()
   delay(100);
   Serial.println(".");
 
-  // while (WiFi.status() != WL_CONNECTED)
-  // {
-  //   digitalWrite(led_b, LOW);
-  //   digitalWrite(led_g, HIGH);
-  //   digitalWrite(led_r, HIGH);
-  //   delay(800);
-  //   digitalWrite(led_b, HIGH);
-  //   digitalWrite(led_g, HIGH);
-  //   digitalWrite(led_r, HIGH);
-  //   delay(800);
-
-  //   if (WiFi.status() == WL_CONNECTED)
-  //   {
-  //     break;
-  //   }
-
-  //   x = x + 1;
-  //   Serial.print(x);
-  //   if (x == 10)
-  //   {
-  //     digitalWrite(led_g, HIGH);
-  //     digitalWrite(led_r, HIGH);
-  //     digitalWrite(led_b, HIGH);
-  //     Serial.println("No se ha podido conectar a la red WIFI");
-  //     // Serial.print("Entrando en modo AP...");
-  //     // /////
-  //     WiFi.disconnect(true);
-  //     WiFi.softAP(ssid, password);
-  //     delay(100);
-  //     server.on("/carga.gif", handleGif);
-  //     server.on("/", handleRoot);
-  //     // server.on("/redes.html", handleRedes);
-  //     server.on("/select", handleSelect);
-  //     server.on("/save", handleSave);
-  //     server.on("/cubolab.jpg", handleImage);
-
-  //     // server.on("/gif.js", handleGifJS);
-
-  //     server.begin();
-
-  //     Serial.println("Modo punto de acceso iniciado");
-  //     // timer.attach(90.0, cierreconfig); //tiempo en segundos
-  //     modoconfig = true;
-  //     break;
-  //     // esp_restart();
-  //   }
+  
   int x = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -396,8 +351,6 @@ void setup()
     }
     //////////////////////////////////////////////////
     // Convertidor Analogico-Digital
-    ads.begin();
-
     if (!ads.begin())
     {
       Serial.println("Failed to initialize ADS.");
@@ -560,7 +513,7 @@ void battery()
 void loop()
 {
   //Loop del buzzer
-  buzzer.loop();
+  // buzzer.loop();
   //  
   server.handleClient();
   // Serial.println(macStr);
