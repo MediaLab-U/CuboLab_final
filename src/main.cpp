@@ -14,15 +14,15 @@
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
-//Buzzer
-// #include <ezBuzzer.h>
+// Buzzer
+//  #include <ezBuzzer.h>
 
 #define led_g 26
 #define led_b 25
 #define led_r 27
-//Buzzer
-// #define buzzer_pin 35
-// Pines y dirección I2C
+// Buzzer
+//  #define buzzer_pin 35
+//  Pines y dirección I2C
 #define SDA_PIN 21
 #define SCL_PIN 22
 // #define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
@@ -33,13 +33,13 @@ Preferences preferences;
 // Convertidor Analogico-Digital
 Adafruit_ADS1115 ads;
 
-//Buzzer classs
-// ezBuzzer buzzer(buzzer_pin);
+// Buzzer classs
+//  ezBuzzer buzzer(buzzer_pin);
 
 Adafruit_MPU6050 mpu;
 
 int16_t adc0;
-#define ADS1X15_ADDRESS (0x48) /// 1001 000 (ADDR = GND) ads1115 I2C adress
+#define ADS1X15_ADDRESS (0x48)   /// 1001 000 (ADDR = GND) ads1115 I2C adress
 #define MPU6050_I2C_ADDRESS 0x68 // I2C adress mpu
 
 int flag = false;
@@ -189,7 +189,6 @@ void handleSelect()
   Serial.println("ssid guardado");
 }
 
-
 void handleSave()
 {
   pinMode(led_g, OUTPUT);
@@ -262,8 +261,30 @@ void setup()
 {
   Serial.begin(115200);
   // Wire.begin();
+
+  // Try to initialize!
   mpu.begin();
+  if (!mpu.begin())
+  {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1)
+    {
+      delay(1000);
+      Serial.println("Reiniciando ESP32");
+      esp_restart();
+    }
+  }
+  Serial.println("MPU6050 Found!");
+
+  // COmprobacion de q funciona (A Ramón no le mola esto)
   ads.begin();
+  if (!ads.begin())
+  {
+    Serial.println("Failed to initialize ADS.");
+    // while (1)
+    //   ;
+  }
+
   preferences.begin("myPreferences", false);
 
   // sistema de archivos para imagenes de la pagina de config
@@ -301,9 +322,8 @@ void setup()
   digitalWrite(led_r, HIGH);
   digitalWrite(led_b, HIGH);
 
-
   // DESPERTAR EL ESP CUANDO SE CONECTA A LA FUENTE DE ALIMENTACIÓN
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+  // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
 
   Serial.print("Conectando a la red WiFi.");
   delay(100);
@@ -311,9 +331,8 @@ void setup()
   delay(100);
   Serial.println(".");
 
-  
   int x = 0;
-  while (WiFi.status() != WL_CONNECTED)
+  while ((WiFi.status() != WL_CONNECTED) || (digitalRead(pin_tension) && modoconfig == false && iniconfig == false))
   {
     digitalWrite(led_b, LOW);
     digitalWrite(led_g, HIGH);
@@ -324,25 +343,25 @@ void setup()
     digitalWrite(led_r, HIGH);
     delay(800);
 
-    if (WiFi.status() == WL_CONNECTED)
-    {
-      break;
-    }
+    // if (WiFi.status() == WL_CONNECTED)
+    // {
+    //   break;
+    // }
 
     x = x + 1;
     Serial.print(x);
 
-    if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)
-    {
-      break;
-    }
+    // if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)
+    // {
+    //   break;
+    // }
 
     if (x == 10)
     {
       digitalWrite(led_g, HIGH);
       digitalWrite(led_r, LOW);
       digitalWrite(led_b, HIGH);
-      delay(10000);
+      delay(1000);
       digitalWrite(led_g, HIGH);
       digitalWrite(led_r, HIGH);
       digitalWrite(led_b, HIGH);
@@ -351,13 +370,8 @@ void setup()
     }
     //////////////////////////////////////////////////
     // Convertidor Analogico-Digital
-    if (!ads.begin())
-    {
-      Serial.println("Failed to initialize ADS.");
-      while (1)
-        ;
-    }
   }
+  // Convertidor Analogico-Digital
 
   digitalWrite(led_g, HIGH);
   digitalWrite(led_r, HIGH);
@@ -374,24 +388,10 @@ void setup()
     sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     mac[0] = 0;
 
-    while (!Serial)
-      delay(1000); // will pause Zero, Leonardo, etc until serial console opens
+    // while (!Serial)
+    //   delay(1000); // will pause Zero, Leonardo, etc until serial console opens
 
     Serial.println("Adafruit MPU6050 test!");
-
-    // Try to initialize!
-    if (!mpu.begin())
-    {
-      Serial.println("Failed to find MPU6050 chip");
-      while (1)
-      {
-        delay(1000);
-        Serial.println("Reiniciando ESP32");
-        esp_restart();
-      }
-    }
-    Serial.println("MPU6050 Found!");
-
     mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
     Serial.println("seleccionado rango");
     Serial.print("Accelerometer range set to: ");
@@ -454,18 +454,17 @@ void setup()
       Serial.println("5 Hz");
       break;
     }
-
-    if (modoconfig == false)
-    {
-      mpu.setMotionInterrupt(true);
-      pinMode(14, INPUT_PULLUP);
-      attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING);
-      mpu.setMotionDetectionThreshold(1.0f); // deteccion de un cambio de gravedad en un incremento de 1m/s^2
-      mpu.setMotionDetectionDuration(2);
-
-      pinMode(4, INPUT_PULLUP);
-    }
     // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
+  }
+  if (modoconfig == false)
+  {
+    mpu.setMotionInterrupt(true);
+    pinMode(14, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING);
+    mpu.setMotionDetectionThreshold(1.0f); // deteccion de un cambio de gravedad en un incremento de 1m/s^2
+    mpu.setMotionDetectionDuration(2);
+
+    pinMode(4, INPUT_PULLUP);
   }
 }
 
@@ -480,7 +479,7 @@ double Ctimer(void)
 
 void battery()
 {
-  adc0 = ((ads.readADC_SingleEnded(0) - 8605)/27.4); // leemos el valor analógico presente en el pin
+  adc0 = ((ads.readADC_SingleEnded(0) - 8605) / 27.4); // leemos el valor analógico presente en el pin
   if (adc0 >= 100)
   {
     adc0 = 100;
@@ -512,9 +511,9 @@ void battery()
 
 void loop()
 {
-  //Loop del buzzer
-  // buzzer.loop();
-  //  
+  // Loop del buzzer
+  //  buzzer.loop();
+  //
   server.handleClient();
   // Serial.println(macStr);
   //  Código indicador de batería//
@@ -544,6 +543,8 @@ void loop()
   {
     iniconfig = false; // cierre de la variable de inicio al ser desconectado
   }
+
+  // Modo funcionamiento normal
   if (WiFi.status() == WL_CONNECTED && modoconfig == false)
   {
     battery();
