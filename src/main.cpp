@@ -47,7 +47,7 @@ int modoconfig = false;
 int iniconfig = false;
 int voltaje;
 const char *ssid = "ConfigCUBO";
-const char *password = "cubolab1234";
+const char *password = "cubolab00";
 // Variables donde se guardan los datos del wifi
 String cuboSSID = "";
 String cuboPassword = "";
@@ -332,7 +332,7 @@ void setup()
   Serial.println(".");
 
   int x = 0;
-  while ((WiFi.status() != WL_CONNECTED) || (digitalRead(pin_tension) && modoconfig == false && iniconfig == false))
+  while ((WiFi.status() != WL_CONNECTED))
   {
     digitalWrite(led_b, LOW);
     digitalWrite(led_g, HIGH);
@@ -351,10 +351,10 @@ void setup()
     x = x + 1;
     Serial.print(x);
 
-    // if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)
-    // {
-    //   break;
-    // }
+    if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)
+    {
+      break;
+    }
 
     if (x == 10)
     {
