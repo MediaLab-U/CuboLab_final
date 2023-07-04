@@ -14,13 +14,15 @@
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
+// Horario
+#include <TimeLib.h>
 // Buzzer
 //  #include <ezBuzzer.h>
 
 #define led_g 26
 #define led_b 25
 #define led_r 27
-// Buzzer
+
 //  #define buzzer_pin 35
 //  Pines y dirección I2C
 #define SDA_PIN 21
@@ -33,8 +35,10 @@ Preferences preferences;
 // Convertidor Analogico-Digital
 Adafruit_ADS1115 ads;
 
-// Buzzer classs
-//  ezBuzzer buzzer(buzzer_pin);
+// Buzzer
+#define BUZZER_PIN 18
+int buzzer_on = LOW;
+bool  buzzer_flag = true;
 
 Adafruit_MPU6050 mpu;
 
@@ -297,6 +301,9 @@ void setup()
   // Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
   // WiFi.scanNetworks(onScanComplete);
 
+  // Buzzer
+  pinMode(BUZZER_PIN, OUTPUT);
+
   // Conexión a la red WiFi
   ssid1 = preferences.getString("ssid", "medialab");
   password1 = preferences.getString("pass", "medialab");
@@ -477,6 +484,21 @@ double Ctimer(void)
   return tm.tv_sec + tm.tv_usec / 1.0E6;
 }
 
+void reg_horario()
+{
+  const int startHour = 9;
+  const int endHour = 21;
+  int currentHour = hour();
+  if (currentHour >= startHour && currentHour < endHour)
+  {
+    buzzer_on = HIGH;
+  }
+  else
+  {
+    buzzer_on = LOW;
+  }
+}
+
 void battery()
 {
   adc0 = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
@@ -491,7 +513,23 @@ void battery()
 
   switch (adc0)
   {
-  case 0 ... 30:
+  case 0 ... 9:
+    digitalWrite(led_r, LOW);
+    digitalWrite(led_g, HIGH);
+    digitalWrite(led_b, HIGH);
+    if(buzzer_flag == true)
+    {
+      tone(BUZZER_PIN,800);
+      delay(400);
+      tone(BUZZER_PIN,800);
+    }
+    else
+    {
+      buzzer_flag == false;
+    }
+
+
+  case 10 ... 30:
     digitalWrite(led_r, LOW);
     digitalWrite(led_g, HIGH);
     digitalWrite(led_b, HIGH);
@@ -730,17 +768,11 @@ void loop()
       Serial.println("No tengo tension");
       esp_deep_sleep_start();
     }
-    if (digitalRead(GPIO_NUM_4) == 1)
+    while (digitalRead(GPIO_NUM_4) == 1)
     {
-      adc0 = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
       battery();
-      if (adc0 >= 95)
-      {
-        digitalWrite(led_r, HIGH);
-        digitalWrite(led_g, LOW);
-        digitalWrite(led_b, HIGH);
-      }
     }
+
     // Despertar al ESP32 cuando se mueva el MPU
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
 
@@ -760,6 +792,14 @@ void loop()
         http.begin(mensajeHTTP);
         int httpCode = http.GET();
         Serial.println(mensajeHTTP);
+        // Buzzer
+
+        if (buzzer_on == HIGH)
+        {
+          tone(BUZZER_PIN, 1000); // 8KHz
+          delay(500);
+        }
+        // Cierre Buzzer
 
         // Impresión de la respuesta en el monitor serie
         if (httpCode > 0)
