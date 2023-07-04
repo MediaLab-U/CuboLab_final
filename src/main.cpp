@@ -507,6 +507,8 @@ void battery()
     digitalWrite(led_b, HIGH);
     break;
   }
+  Serial.println(adc0);
+  delay(1000);
 }
 
 void loop()
@@ -730,7 +732,7 @@ void loop()
     }
     if (digitalRead(GPIO_NUM_4) == 1)
     {
-      adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
+      adc0 = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
       battery();
       if (adc0 >= 95)
       {
