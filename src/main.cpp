@@ -38,7 +38,7 @@ Adafruit_ADS1115 ads;
 // Buzzer
 #define BUZZER_PIN 18
 int buzzer_on = LOW;
-bool  buzzer_flag = true;
+bool buzzer_flag = true;
 
 Adafruit_MPU6050 mpu;
 
@@ -59,9 +59,9 @@ String cuboPassword = "";
 // String password1 = "";
 
 String listaredes = "";
-//int numredes;
+// int numredes;
 
-//bool wifiScanCompleted = false;
+// bool wifiScanCompleted = false;
 bool scanningComplete = false;
 
 WebServer server(80);
@@ -146,7 +146,7 @@ void escanredes()
   Serial.println("Finalizado lectura");
 
   scanningComplete = true;
-  //wifiScanCompleted = true;
+  // wifiScanCompleted = true;
   wifiScanTicker.detach();
 }
 
@@ -501,7 +501,7 @@ void reg_horario()
 
 void battery()
 {
-  adc0 = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
+  adc0 = ((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745); // leemos el valor analógico presente en el pin
   if (adc0 >= 100)
   {
     adc0 = 100;
@@ -510,24 +510,22 @@ void battery()
   {
     adc0 = 0;
   }
-
   switch (adc0)
   {
   case 0 ... 9:
     digitalWrite(led_r, LOW);
     digitalWrite(led_g, HIGH);
     digitalWrite(led_b, HIGH);
-    if(buzzer_flag == true)
+    if (buzzer_flag == true)
     {
-      tone(BUZZER_PIN,800);
+      tone(BUZZER_PIN, 800);
       delay(400);
-      tone(BUZZER_PIN,800);
+      tone(BUZZER_PIN, 800);
     }
     else
     {
       buzzer_flag == false;
     }
-
 
   case 10 ... 30:
     digitalWrite(led_r, LOW);
@@ -549,12 +547,15 @@ void battery()
   delay(1000);
 }
 
-void bateria(int* porcentaje)
+void bateria(int *porcentaje)
 {
   int porcent = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
-  if (porcent >= 100) *porcentaje = 100;
-  else if (porcent <= 0) *porcentaje = 0;
-  else *porcentaje = porcent;
+  if (porcent >= 100)
+    *porcentaje = 100;
+  else if (porcent <= 0)
+    *porcentaje = 0;
+  else
+    *porcentaje = porcent;
 }
 
 void loop()
@@ -783,9 +784,6 @@ void loop()
 
     // Despertar al ESP32 cuando se mueva el MPU
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
-
-    Serial.println(mpu.getMotionInterruptStatus());
-    delay(1000);
 
     // Parte encargada de comprobar si se ha realizado el trabajo, comprobar el valor anterior en memoria
     // y enviar los datos a la base de datos
