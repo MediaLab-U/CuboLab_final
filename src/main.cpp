@@ -55,13 +55,13 @@ const char *password = "cubolab00";
 // Variables donde se guardan los datos del wifi
 String cuboSSID = "";
 String cuboPassword = "";
-String ssid1 = "";
-String password1 = "";
+// String ssid1 = "";
+// String password1 = "";
 
 String listaredes = "";
-int numredes;
+//int numredes;
 
-bool wifiScanCompleted = false;
+//bool wifiScanCompleted = false;
 bool scanningComplete = false;
 
 WebServer server(80);
@@ -97,8 +97,8 @@ void cierreconfig()
     digitalWrite(led_g, HIGH);
     digitalWrite(led_r, HIGH);
     WiFi.disconnect(true);
-    ssid1 = preferences.getString("ssid", "medialab");
-    password1 = preferences.getString("pass", "medialab");
+    String ssid1 = preferences.getString("ssid", "medialab");
+    String password1 = preferences.getString("pass", "medialab");
     WiFi.begin(ssid1.c_str(), password1.c_str());
     Serial.println("No cambios config. Conectando wifi anterior..." + ssid1 + password1);
     modoconfig = false;
@@ -146,7 +146,7 @@ void escanredes()
   Serial.println("Finalizado lectura");
 
   scanningComplete = true;
-  wifiScanCompleted = true;
+  //wifiScanCompleted = true;
   wifiScanTicker.detach();
 }
 
@@ -305,8 +305,8 @@ void setup()
   pinMode(BUZZER_PIN, OUTPUT);
 
   // Conexión a la red WiFi
-  ssid1 = preferences.getString("ssid", "medialab");
-  password1 = preferences.getString("pass", "medialab");
+  String ssid1 = preferences.getString("ssid", "medialab");
+  String password1 = preferences.getString("pass", "medialab");
   WiFi.begin(ssid1.c_str(), password1.c_str());
 
   // Configuración para dejar activos los pines de batería
@@ -549,6 +549,14 @@ void battery()
   delay(1000);
 }
 
+void bateria(int* porcentaje)
+{
+  int porcent = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
+  if (porcent >= 100) *porcentaje = 100;
+  else if (porcent <= 0) *porcentaje = 0;
+  else *porcentaje = porcent;
+}
+
 void loop()
 {
   // Loop del buzzer
@@ -788,7 +796,9 @@ void loop()
       Serial.println("El estado anterior es: " + mensaje + " y el actual: " + actual + " cara: " + valor_cara);
       if (mensaje != actual)
       {
-        String mensajeHTTP = "https://www.unioviedo.es/medialab/datos_cube.php?e=" + String(valor_cara) + "&m='" + (String)macStr + "'&b=" + 50;
+        int porcentaje;
+        bateria(&porcentaje);
+        String mensajeHTTP = "https://www.unioviedo.es/medialab/datos_cube.php?e=" + String(valor_cara) + "&m='" + (String)macStr + "'&b=" + String(porcentaje);
         http.begin(mensajeHTTP);
         int httpCode = http.GET();
         Serial.println(mensajeHTTP);
