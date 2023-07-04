@@ -51,13 +51,13 @@ const char *password = "cubolab00";
 // Variables donde se guardan los datos del wifi
 String cuboSSID = "";
 String cuboPassword = "";
-String ssid1 = "";
-String password1 = "";
+// String ssid1 = "";
+// String password1 = "";
 
 String listaredes = "";
-int numredes;
+//int numredes;
 
-bool wifiScanCompleted = false;
+//bool wifiScanCompleted = false;
 bool scanningComplete = false;
 
 WebServer server(80);
@@ -93,8 +93,8 @@ void cierreconfig()
     digitalWrite(led_g, HIGH);
     digitalWrite(led_r, HIGH);
     WiFi.disconnect(true);
-    ssid1 = preferences.getString("ssid", "medialab");
-    password1 = preferences.getString("pass", "medialab");
+    String ssid1 = preferences.getString("ssid", "medialab");
+    String password1 = preferences.getString("pass", "medialab");
     WiFi.begin(ssid1.c_str(), password1.c_str());
     Serial.println("No cambios config. Conectando wifi anterior..." + ssid1 + password1);
     modoconfig = false;
@@ -142,7 +142,7 @@ void escanredes()
   Serial.println("Finalizado lectura");
 
   scanningComplete = true;
-  wifiScanCompleted = true;
+  //wifiScanCompleted = true;
   wifiScanTicker.detach();
 }
 
@@ -298,8 +298,8 @@ void setup()
   // WiFi.scanNetworks(onScanComplete);
 
   // Conexión a la red WiFi
-  ssid1 = preferences.getString("ssid", "medialab");
-  password1 = preferences.getString("pass", "medialab");
+  String ssid1 = preferences.getString("ssid", "medialab");
+  String password1 = preferences.getString("pass", "medialab");
   WiFi.begin(ssid1.c_str(), password1.c_str());
 
   // Configuración para dejar activos los pines de batería
