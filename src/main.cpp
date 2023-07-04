@@ -511,6 +511,14 @@ void battery()
   delay(1000);
 }
 
+void bateria(int* porcentaje)
+{
+  int porcent = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
+  if (porcent >= 100) *porcentaje = 100;
+  else if (porcent <= 0) *porcentaje = 0;
+  else *porcentaje = porcent;
+}
+
 void loop()
 {
   // Loop del buzzer
@@ -756,7 +764,9 @@ void loop()
       Serial.println("El estado anterior es: " + mensaje + " y el actual: " + actual + " cara: " + valor_cara);
       if (mensaje != actual)
       {
-        String mensajeHTTP = "https://www.unioviedo.es/medialab/datos_cube.php?e=" + String(valor_cara) + "&m='" + (String)macStr + "'&b=" + 50;
+        int porcentaje;
+        bateria(&porcentaje);
+        String mensajeHTTP = "https://www.unioviedo.es/medialab/datos_cube.php?e=" + String(valor_cara) + "&m='" + (String)macStr + "'&b=" + String(porcentaje);
         http.begin(mensajeHTTP);
         int httpCode = http.GET();
         Serial.println(mensajeHTTP);
