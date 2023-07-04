@@ -728,7 +728,7 @@ void loop()
       Serial.println("No tengo tension");
       esp_deep_sleep_start();
     }
-    while (digitalRead(GPIO_NUM_4) == 1)
+    if (digitalRead(GPIO_NUM_4) == 1)
     {
       adc0 = ((ads.readADC_SingleEnded(0) - 16937) / 54.79); // leemos el valor analógico presente en el pin
       battery();
