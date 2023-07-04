@@ -33,12 +33,12 @@
 Preferences preferences;
 
 // Convertidor Analogico-Digital
-Adafruit_ADS1115 ads;
+Adafruit_ADS1015 ads;
 
 // Buzzer
 #define BUZZER_PIN 18
-int buzzer_on = LOW;
-bool buzzer_flag = true;
+bool buzzer_on = false;
+bool buzzer_flag = false;
 
 Adafruit_MPU6050 mpu;
 
@@ -489,13 +489,14 @@ void reg_horario()
   const int startHour = 9;
   const int endHour = 21;
   int currentHour = hour();
+  Serial.println(currentHour);
   if (currentHour >= startHour && currentHour < endHour)
   {
-    buzzer_on = HIGH;
+    buzzer_on = true;
   }
   else
   {
-    buzzer_on = LOW;
+    buzzer_on = false;
   }
 }
 
@@ -519,12 +520,13 @@ void battery()
     if (buzzer_flag == true)
     {
       tone(BUZZER_PIN, 800);
-      delay(400);
+      delay(100);
+      tone(BUZZER_PIN, 0);
+      delay(100);
       tone(BUZZER_PIN, 800);
-    }
-    else
-    {
-      buzzer_flag == false;
+      delay(100);
+      tone(BUZZER_PIN, 0);
+      buzzer_flag = false;
     }
 
   case 10 ... 30:
@@ -800,8 +802,10 @@ void loop()
         http.begin(mensajeHTTP);
         int httpCode = http.GET();
         Serial.println(mensajeHTTP);
-        // Buzzer
 
+        // Buzzer
+        reg_horario();
+        Serial.println(buzzer_on);
         if (buzzer_on == HIGH)
         {
           tone(BUZZER_PIN, 1000); // 8KHz
