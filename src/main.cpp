@@ -16,8 +16,6 @@
 #include <SPI.h>
 // Horario
 #include "Time.h"
-// Buzzer
-//  #include <ezBuzzer.h>
 
 #define led_g 26
 #define led_b 25
@@ -122,13 +120,16 @@ void ledNaranja()
   // pinMode(led_b,OUTPUT);
   // pinMode(led_r,OUTPUT);
   // pinMode(led_g,OUTPUT);
-  analogWrite(led_b, 236);
-  analogWrite(led_g, 100);
-  analogWrite(led_r, 130);
+  analogWrite(led_b, 220);
+  analogWrite(led_g, 130);
+  analogWrite(led_r, 120);
 }
 
 void ledBlanco()
 {
+  // pinMode(led_b,OUTPUT);
+  // pinMode(led_r,OUTPUT);
+  // pinMode(led_g,OUTPUT);
   digitalWrite(led_b, LOW);
   digitalWrite(led_g, LOW);
   digitalWrite(led_r, LOW);
@@ -207,11 +208,6 @@ void beep_buzzer(int modo)
   }
 }
 
-// void beep_remember()
-// {
-//   beep_buzzer(beep_2h);
-// }
-
 void wakeup_2h()
 {
   int wakeup_reason = esp_sleep_get_wakeup_cause();
@@ -240,12 +236,8 @@ void beep_time()
 }
 
 // Cierre Hora ESP32
-
 void cierreconfig()
 {
-  pinMode(led_g, OUTPUT);
-  pinMode(led_b, OUTPUT);
-  pinMode(led_r, OUTPUT);
   // Código a ejecutar cuando se alcance el tiempo deseado
   //     WiFi.disconnect(true);
   // WiFi.begin(cuboSSID.c_str(), cuboPassword.c_str());
@@ -354,9 +346,10 @@ void handleSelect()
 
 void handleSave()
 {
-  pinMode(led_g, OUTPUT);
   pinMode(led_b, OUTPUT);
   pinMode(led_r, OUTPUT);
+  pinMode(led_g, OUTPUT);
+
   cuboPassword = server.arg("password");
   server.send(200, "text/plain", "SSID y contraseña guardados: " + cuboSSID + ", " + cuboPassword);
   delay(2000);
@@ -373,7 +366,7 @@ void handleSave()
     Serial.print(x1);
     if (x1 == 10)
     {
-      ledNaranja();
+      // ledNaranja();
       Serial.println("No se ha podido conectar a la red WIFI");
       WiFi.disconnect(true);
       WiFi.softAP(ssid, password);
@@ -384,6 +377,7 @@ void handleSave()
       server.on("/save", handleSave);
       server.on("/cubolab.jpg", handleImage);
       server.begin();
+      timer.attach(120.0, loop); // tiempo en segundos, al terminar ejecutará la funcion cierreconfig
       Serial.println("Modo punto de acceso iniciado");
       modoconfig = true;
       break;
@@ -675,9 +669,6 @@ void bateria(int *porcentaje)
 
 void loop()
 {
-  // Loop del buzzer
-  //  buzzer.loop();
-  //
   server.handleClient();
   // Serial.println(macStr);
   //  Código indicador de batería//
