@@ -87,6 +87,63 @@ double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
 
+void ledAzul()
+{
+  // pinMode(led_b, OUTPUT);
+  // pinMode(led_r, OUTPUT);
+  // pinMode(led_g, OUTPUT);
+  digitalWrite(led_b, LOW);
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_r, HIGH);
+}
+
+void ledVerde()
+{
+  // pinMode(led_b, OUTPUT);
+  // pinMode(led_r, OUTPUT);
+  // pinMode(led_g, OUTPUT);
+  digitalWrite(led_b, HIGH);
+  digitalWrite(led_g, LOW);
+  digitalWrite(led_r, HIGH);
+}
+
+void ledRojo()
+{
+  // pinMode(led_b, OUTPUT);
+  // pinMode(led_r, OUTPUT);
+  // pinMode(led_g, OUTPUT);
+  digitalWrite(led_b, HIGH);
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_r, LOW);
+}
+
+void ledNaranja()
+{
+  // pinMode(led_b,OUTPUT);
+  // pinMode(led_r,OUTPUT);
+  // pinMode(led_g,OUTPUT);
+  analogWrite(led_b, 236);
+  analogWrite(led_g, 100);
+  analogWrite(led_r, 130);
+}
+
+void ledBlanco()
+{
+  digitalWrite(led_b, LOW);
+  digitalWrite(led_g, LOW);
+  digitalWrite(led_r, LOW);
+}
+
+void ledApagado()
+{
+  // pinMode(led_b,OUTPUT);
+  // pinMode(led_r,OUTPUT);
+  // pinMode(led_g,OUTPUT);
+  digitalWrite(led_b, HIGH);
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_r, HIGH);
+}
+
 // Hora en el ESP32
 void setTimezone(String timezone)
 {
@@ -110,7 +167,6 @@ void initTime(String timezone)
   // Now we can set the real timezone
   setTimezone(timezone);
 }
-
 
 void beep_buzzer(int modo)
 {
@@ -159,12 +215,11 @@ void beep_buzzer(int modo)
 void wakeup_2h()
 {
   int wakeup_reason = esp_sleep_get_wakeup_cause();
-  if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
   {
     beep_buzzer(beep_2h);
   }
   return;
-
 }
 
 void beep_time()
@@ -177,7 +232,7 @@ void beep_time()
   }
   hora = timeinfo.tm_hour;
   Serial.println(hora);
-  if (hora >= 9 && hora <= 9) // rango de 9AM a 10 AM
+  if (hora >= 9 && hora <= 21) // rango de 9AM a 10 AM
   {
     wakeup_2h();
   }
@@ -200,9 +255,6 @@ void cierreconfig()
   // }
   if (modoconfig == true)
   {
-    digitalWrite(led_b, HIGH);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, HIGH);
     WiFi.disconnect(true);
     String ssid1 = preferences.getString("ssid", "medialab");
     String password1 = preferences.getString("pass", "medialab");
@@ -305,9 +357,6 @@ void handleSave()
   pinMode(led_g, OUTPUT);
   pinMode(led_b, OUTPUT);
   pinMode(led_r, OUTPUT);
-  digitalWrite(led_b, HIGH);
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_r, HIGH);
   cuboPassword = server.arg("password");
   server.send(200, "text/plain", "SSID y contraseña guardados: " + cuboSSID + ", " + cuboPassword);
   delay(2000);
@@ -316,21 +365,15 @@ void handleSave()
   int x1 = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
-    digitalWrite(led_b, LOW);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, HIGH);
+    ledAzul();
     delay(800);
-    digitalWrite(led_b, HIGH);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, HIGH);
+    ledApagado();
     delay(800);
     x1 = x1 + 1;
     Serial.print(x1);
     if (x1 == 10)
     {
-      analogWrite(led_b, 236);
-      analogWrite(led_g, 100);
-      analogWrite(led_r, 130);
+      ledNaranja();
       Serial.println("No se ha podido conectar a la red WIFI");
       WiFi.disconnect(true);
       WiFi.softAP(ssid, password);
@@ -432,9 +475,7 @@ void setup()
   pinMode(led_g, OUTPUT);
   pinMode(led_b, OUTPUT);
   pinMode(led_r, OUTPUT);
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_r, HIGH);
-  digitalWrite(led_b, HIGH);
+  ledApagado();
 
   // DESPERTAR EL ESP CUANDO SE CONECTA A LA FUENTE DE ALIMENTACIÓN
   // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
@@ -448,13 +489,9 @@ void setup()
   int x = 0;
   while ((WiFi.status() != WL_CONNECTED))
   {
-    digitalWrite(led_b, LOW);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, HIGH);
+    ledAzul();
     delay(800);
-    digitalWrite(led_b, HIGH);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_r, HIGH);
+    ledApagado();
     delay(800);
 
     // if (WiFi.status() == WL_CONNECTED)
@@ -472,13 +509,9 @@ void setup()
 
     if (x == 10)
     {
-      digitalWrite(led_g, HIGH);
-      digitalWrite(led_r, LOW);
-      digitalWrite(led_b, HIGH);
-      delay(1000);
-      digitalWrite(led_g, HIGH);
-      digitalWrite(led_r, HIGH);
-      digitalWrite(led_b, HIGH);
+      ledRojo();
+      delay(3000);
+      ledApagado();
       Serial.println("No se ha podido conectar a la red WIFI");
       esp_deep_sleep_start();
     }
@@ -486,14 +519,9 @@ void setup()
     // Convertidor Analogico-Digital
   }
   // Convertidor Analogico-Digital
-
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_r, HIGH);
-  digitalWrite(led_b, HIGH);
-
   // remember.attach(30, beep_remember);
-  //timer.attach(120.0, cierreconfig);
-  //remember.attach(30, beep_buzzer,beep_battery);
+  // timer.attach(120.0, cierreconfig);
+  // remember.attach(30, beep_buzzer,beep_battery);
 
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -572,17 +600,21 @@ void setup()
       Serial.println("5 Hz");
       break;
     }
+
+    // Star time
+    Serial.setDebugOutput(true);
+    initTime("CET-1CEST,M3.5.0/1,M10.5.0");
+
+    // Buzzer wakeup
+    beep_time();
+    // Close
     // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
   }
-  
-  //Buzzer wakeup
-  beep_time();
-  //Close
   if (modoconfig == false)
   {
     mpu.setMotionInterrupt(true);
     pinMode(14, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING);
+    // attachInterrupt(digitalPinToInterrupt(14), handleInterrupt, RISING);
     mpu.setMotionDetectionThreshold(1.0f); // deteccion de un cambio de gravedad en un incremento de 1m/s^2
     mpu.setMotionDetectionDuration(2);
 
@@ -599,7 +631,6 @@ double Ctimer(void)
   return tm.tv_sec + tm.tv_usec / 1.0E6;
 }
 
-
 void battery()
 {
   adc0 = ((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745); // leemos el valor analógico presente en el pin
@@ -614,25 +645,17 @@ void battery()
   switch (adc0)
   {
   case 0 ... 9:
-    digitalWrite(led_r, LOW);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_b, HIGH);
+    ledRojo();
     beep_buzzer(beep_battery);
 
   case 10 ... 30:
-    digitalWrite(led_r, LOW);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_b, HIGH);
+    ledRojo();
     break;
   case 31 ... 80:
-    digitalWrite(led_r, HIGH);
-    digitalWrite(led_g, HIGH);
-    digitalWrite(led_b, LOW);
+    ledAzul();
     break;
   default:
-    digitalWrite(led_r, HIGH);
-    digitalWrite(led_g, LOW);
-    digitalWrite(led_b, HIGH);
+    ledVerde();
     break;
   }
   Serial.println(adc0);
@@ -662,9 +685,7 @@ void loop()
 
   if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
   {
-    analogWrite(led_b, 236);
-    analogWrite(led_g, 100);
-    analogWrite(led_r, 130);
+    ledNaranja();
     WiFi.disconnect(true);
     WiFi.softAP(ssid, password);
     delay(100);
@@ -862,7 +883,7 @@ void loop()
     }
     /***********************/
     // // Despertar al ESP32 cuando se conecte a la red
-    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
     // Apagar el ESP32 cuando no tenga suficiente batería
     if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
     {
@@ -898,6 +919,8 @@ void loop()
         {
           String payload = http.getString();
           Serial.println(payload);
+          // Led blanco
+          ledBlanco();
           // Buzzer
           beep_buzzer(beep_send);
           // Cierre Buzzer
@@ -913,16 +936,13 @@ void loop()
       preferences.end();
 
       // Apagar el LED
-      // digitalWrite(led_g, HIGH);
-      // digitalWrite(led_r, HIGH);
-      // digitalWrite(led_b, HIGH);
+      ledApagado();
       // Código para enviar a dormi el SP32 y despertarlo cada 15 minutos
       Serial.println("Me voy a dormir");
 
-      const int uS_TO_h_FACTOR = 1000000;
-      const int TIME_TO_SLEEP = 30;
-
-      esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_h_FACTOR);
+      // Se va a dormir 2 horas
+      long long int TIME_TO_SLEEP = 7200000000LL; // 2h en us
+      esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP);
       esp_deep_sleep_start();
     }
   }
