@@ -15,7 +15,7 @@
 #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
 // Horario
-#include <TimeLib.h>
+#include "Time.h"
 // Buzzer
 //  #include <ezBuzzer.h>
 
@@ -39,6 +39,13 @@ Adafruit_ADS1015 ads;
 #define BUZZER_PIN 18
 bool buzzer_on = false;
 bool buzzer_flag = false;
+
+#define beep_battery 0
+#define beep_2h 1
+#define beep_send 2
+
+// Horario
+int hora;
 
 Adafruit_MPU6050 mpu;
 
@@ -70,6 +77,7 @@ HTTPClient http;
 
 Ticker timer;
 Ticker wifiScanTicker;
+// Ticker remember; // envio cada 2 horas de un pitido para recordar el uso del cubo
 
 char macStr[18];
 byte mac[6];
@@ -78,6 +86,105 @@ int valor_cara = 0;
 double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
+
+// Hora en el ESP32
+void setTimezone(String timezone)
+{
+  Serial.printf("  Setting Timezone to %s\n", timezone.c_str());
+  setenv("TZ", timezone.c_str(), 1); //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
+  tzset();
+}
+
+void initTime(String timezone)
+{
+  struct tm timeinfo;
+
+  Serial.println("Setting up time");
+  configTime(0, 0, "hora.rediris.es"); // First connect to NTP server, with 0 TZ offset
+  if (!getLocalTime(&timeinfo))
+  {
+    Serial.println("  Failed to obtain time");
+    return;
+  }
+  Serial.println("  Got the time from NTP");
+  // Now we can set the real timezone
+  setTimezone(timezone);
+}
+
+
+void beep_buzzer(int modo)
+{
+
+  switch (modo)
+  {
+  case 0:
+    if (buzzer_flag == true)
+    {
+      tone(BUZZER_PIN, 800);
+      delay(100);
+      tone(BUZZER_PIN, 0);
+      delay(100);
+      tone(BUZZER_PIN, 800);
+      delay(100);
+      tone(BUZZER_PIN, 0);
+      buzzer_flag = false;
+    }
+    break;
+  case 1:
+    tone(BUZZER_PIN, 1500);
+    delay(100);
+    tone(BUZZER_PIN, 0);
+    delay(100);
+    tone(BUZZER_PIN, 1500);
+    delay(100);
+    tone(BUZZER_PIN, 0);
+    delay(100);
+    tone(BUZZER_PIN, 1500);
+    delay(100);
+    tone(BUZZER_PIN, 0);
+    break;
+  case 2:
+    tone(BUZZER_PIN, 1000);
+    delay(100);
+    tone(BUZZER_PIN, 0);
+    break;
+  }
+}
+
+// void beep_remember()
+// {
+//   beep_buzzer(beep_2h);
+// }
+
+void wakeup_2h()
+{
+  int wakeup_reason = esp_sleep_get_wakeup_cause();
+  if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
+  {
+    beep_buzzer(beep_2h);
+  }
+  return;
+
+}
+
+void beep_time()
+{
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo))
+  {
+    Serial.println("Failed to obtain time 1");
+    return;
+  }
+  hora = timeinfo.tm_hour;
+  Serial.println(hora);
+  if (hora >= 9 && hora <= 9) // rango de 9AM a 10 AM
+  {
+    wakeup_2h();
+  }
+  return;
+}
+
+// Cierre Hora ESP32
 
 void cierreconfig()
 {
@@ -384,6 +491,10 @@ void setup()
   digitalWrite(led_r, HIGH);
   digitalWrite(led_b, HIGH);
 
+  // remember.attach(30, beep_remember);
+  //timer.attach(120.0, cierreconfig);
+  //remember.attach(30, beep_buzzer,beep_battery);
+
   if (WiFi.status() == WL_CONNECTED)
   {
     Serial.println("Conexión exitosa");
@@ -463,6 +574,10 @@ void setup()
     }
     // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
   }
+  
+  //Buzzer wakeup
+  beep_time();
+  //Close
   if (modoconfig == false)
   {
     mpu.setMotionInterrupt(true);
@@ -484,21 +599,6 @@ double Ctimer(void)
   return tm.tv_sec + tm.tv_usec / 1.0E6;
 }
 
-void reg_horario()
-{
-  const int startHour = 9;
-  const int endHour = 21;
-  int currentHour = hour();
-  Serial.println(currentHour);
-  if (currentHour >= startHour && currentHour < endHour)
-  {
-    buzzer_on = true;
-  }
-  else
-  {
-    buzzer_on = false;
-  }
-}
 
 void battery()
 {
@@ -517,17 +617,7 @@ void battery()
     digitalWrite(led_r, LOW);
     digitalWrite(led_g, HIGH);
     digitalWrite(led_b, HIGH);
-    if (buzzer_flag == true)
-    {
-      tone(BUZZER_PIN, 800);
-      delay(100);
-      tone(BUZZER_PIN, 0);
-      delay(100);
-      tone(BUZZER_PIN, 800);
-      delay(100);
-      tone(BUZZER_PIN, 0);
-      buzzer_flag = false;
-    }
+    beep_buzzer(beep_battery);
 
   case 10 ... 30:
     digitalWrite(led_r, LOW);
@@ -803,21 +893,14 @@ void loop()
         int httpCode = http.GET();
         Serial.println(mensajeHTTP);
 
-        // Buzzer
-        reg_horario();
-        Serial.println(buzzer_on);
-        if (buzzer_on == HIGH)
-        {
-          tone(BUZZER_PIN, 1000); // 8KHz
-          delay(500);
-        }
-        // Cierre Buzzer
-
         // Impresión de la respuesta en el monitor serie
         if (httpCode > 0)
         {
           String payload = http.getString();
           Serial.println(payload);
+          // Buzzer
+          beep_buzzer(beep_send);
+          // Cierre Buzzer
         }
         else
         {
@@ -836,6 +919,10 @@ void loop()
       // Código para enviar a dormi el SP32 y despertarlo cada 15 minutos
       Serial.println("Me voy a dormir");
 
+      const int uS_TO_h_FACTOR = 1000000;
+      const int TIME_TO_SLEEP = 30;
+
+      esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_h_FACTOR);
       esp_deep_sleep_start();
     }
   }
