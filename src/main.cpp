@@ -177,33 +177,24 @@ void beep_buzzer(int modo)
   case 0:
     if (buzzer_flag == true)
     {
-      tone(BUZZER_PIN, 800);
-      delay(100);
-      tone(BUZZER_PIN, 0);
-      delay(100);
-      tone(BUZZER_PIN, 800);
-      delay(100);
-      tone(BUZZER_PIN, 0);
+      tone(BUZZER_PIN, 800, 100);
+      tone(BUZZER_PIN, 0, 100);
+      tone(BUZZER_PIN, 800, 100);
+      tone(BUZZER_PIN, 0, 100);
       buzzer_flag = false;
     }
     break;
   case 1:
-    tone(BUZZER_PIN, 1500);
-    delay(100);
-    tone(BUZZER_PIN, 0);
-    delay(100);
-    tone(BUZZER_PIN, 1500);
-    delay(100);
-    tone(BUZZER_PIN, 0);
-    delay(100);
-    tone(BUZZER_PIN, 1500);
-    delay(100);
-    tone(BUZZER_PIN, 0);
+    tone(BUZZER_PIN, 1500, 100);
+    tone(BUZZER_PIN, 0, 100);
+    tone(BUZZER_PIN, 1500, 100);
+    tone(BUZZER_PIN, 0, 100);
+    tone(BUZZER_PIN, 1500, 100);
+    tone(BUZZER_PIN, 0, 100);
     break;
   case 2:
-    tone(BUZZER_PIN, 1000);
-    delay(100);
-    tone(BUZZER_PIN, 0);
+    tone(BUZZER_PIN, 1000, 100);
+    tone(BUZZER_PIN, 0, 100);
     break;
   }
 }
