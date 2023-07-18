@@ -193,8 +193,8 @@ void beep_buzzer(int modo)
     tone(BUZZER_PIN, 0, 100);
     break;
   case 2:
-    tone(BUZZER_PIN, 1000, 100);
-    tone(BUZZER_PIN, 0, 100);
+    tone(BUZZER_PIN, 800, 100);
+    // tone(BUZZER_PIN, 0, 2000);
     break;
   }
 }
