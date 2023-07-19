@@ -36,7 +36,7 @@ Adafruit_ADS1015 ads;
 // Buzzer
 #define BUZZER_PIN 18
 bool buzzer_on = false;
-bool buzzer_flag = false;
+bool buzzer_flag = true;
 
 #define beep_battery 0
 #define beep_2h 1
@@ -193,8 +193,8 @@ void beep_buzzer(int modo)
     tone(BUZZER_PIN, 0, 100);
     break;
   case 2:
-    tone(BUZZER_PIN, 800, 100);
-    // tone(BUZZER_PIN, 0, 2000);
+    tone(BUZZER_PIN, 1000, 100);
+    tone(BUZZER_PIN, 0, 100);
     break;
   }
 }
@@ -214,7 +214,7 @@ void beep_time()
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo))
   {
-    Serial.println("Failed to obtain time 1");
+    Serial.println("Failed to obtain the current time");
     return;
   }
   hora = timeinfo.tm_hour;
