@@ -158,13 +158,13 @@ void initTime(String timezone)
   struct tm timeinfo;
 
   Serial.println("Setting up time");
-  configTime(0, 0, "hora.rediris.es"); // First connect to NTP server, with 0 TZ offset
+  configTime(0, 0, "hora.roa.es"); // First connect to NTP server, with 0 TZ offset
   if (!getLocalTime(&timeinfo))
   {
-    Serial.println("  Failed to obtain time");
+    Serial.println("Failed to obtain time");
     return;
   }
-  Serial.println("  Got the time from NTP");
+  Serial.println("Got the time from NTP");
   // Now we can set the real timezone
   setTimezone(timezone);
 }
@@ -228,7 +228,7 @@ void beep_time()
   }
   hora = timeinfo.tm_hour;
   Serial.println(hora);
-  if (hora >= 9 && hora <= 21) // rango de 9AM a 10 AM
+  if (hora >= 21 && hora <= 9) // rango de 9AM a 10 AM
   {
     wakeup_2h();
   }
