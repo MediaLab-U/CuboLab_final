@@ -219,7 +219,7 @@ void beep_time()
   }
   hora = timeinfo.tm_hour;
   Serial.println(hora);
-  if (hora >= 21 && hora <= 9) // rango de 9AM a 10 AM
+  if (hora <= 21 && hora > 9) // rango de 9AM a 10 AM
   {
     wakeup_2h();
   }
