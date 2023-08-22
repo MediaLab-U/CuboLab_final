@@ -618,7 +618,7 @@ double Ctimer(void)
 
 void battery()
 {
-  adc0 = ((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745); // leemos el valor analógico presente en el pin
+  adc0 = ((ads.readADC_SingleEnded(0) - 730) * 100) / (948 - 730); // leemos el valor analógico presente en el pin
   if (adc0 >= 100)
   {
     adc0 = 100;
@@ -633,10 +633,10 @@ void battery()
     ledRojo();
     beep_buzzer(beep_battery);
 
-  case 10 ... 30:
+  case 10 ... 20:
     ledRojo();
     break;
-  case 31 ... 80:
+  case 21 ... 80:
     ledAzul();
     break;
   default:
@@ -649,7 +649,7 @@ void battery()
 
 void bateria(int *porcentaje)
 {
-  int porcent = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
+  int porcent = (((ads.readADC_SingleEnded(0) - 730) * 100) / (948 - 730)); // leemos el valor analógico presente en el pin
   if (porcent >= 100)
     *porcentaje = 100;
   else if (porcent <= 0)
@@ -664,7 +664,6 @@ void loop()
   // Serial.println(macStr);
   //  Código indicador de batería//
   /*****************************/
-
   if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
   {
     ledNaranja();
@@ -694,6 +693,20 @@ void loop()
     battery();
     /***********************/
     // Cierre código indicador de batería
+    //**********************/
+    // // Despertar al ESP32 cuando se conecte a la red
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+    // Apagar el ESP32 cuando no tenga suficiente batería
+    if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
+    {
+      Serial.println("No tengo tension");
+      esp_deep_sleep_start();
+    }
+    while (digitalRead(GPIO_NUM_4) == 1)
+    {
+      battery();
+    }
+    /***********************/
 
     preferences.begin("myPreferences", true); // Sentencia para guardar valores en memoria no volatil
 
@@ -864,18 +877,18 @@ void loop()
       }
     }
     /***********************/
-    // // Despertar al ESP32 cuando se conecte a la red
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
-    // Apagar el ESP32 cuando no tenga suficiente batería
-    if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
-    {
-      Serial.println("No tengo tension");
-      esp_deep_sleep_start();
-    }
-    while (digitalRead(GPIO_NUM_4) == 1)
-    {
-      battery();
-    }
+    // // // Despertar al ESP32 cuando se conecte a la red
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+    // // Apagar el ESP32 cuando no tenga suficiente batería
+    // if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
+    // {
+    //   Serial.println("No tengo tension");
+    //   esp_deep_sleep_start();
+    // }
+    // while (digitalRead(GPIO_NUM_4) == 1)
+    // {
+    //   battery();
+    // }
 
     // Despertar al ESP32 cuando se mueva el MPU
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
