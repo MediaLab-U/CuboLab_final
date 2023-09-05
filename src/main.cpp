@@ -518,6 +518,7 @@ void setup()
     // Conversión de la dirección MAC a una cadena de caracteres
     sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     mac[0] = 0;
+    Serial.println(macStr);
 
     // while (!Serial)
     //   delay(1000); // will pause Zero, Leonardo, etc until serial console opens
