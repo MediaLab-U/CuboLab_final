@@ -158,13 +158,13 @@ void initTime(String timezone)
   struct tm timeinfo;
 
   Serial.println("Setting up time");
-  configTime(0, 0, "hora.rediris.es"); // First connect to NTP server, with 0 TZ offset
+  configTime(0, 0, "hora.roa.es"); // First connect to NTP server, with 0 TZ offset
   if (!getLocalTime(&timeinfo))
   {
-    Serial.println("  Failed to obtain time");
+    Serial.println("Failed to obtain time");
     return;
   }
-  Serial.println("  Got the time from NTP");
+  Serial.println("Got the time from NTP");
   // Now we can set the real timezone
   setTimezone(timezone);
 }
@@ -219,7 +219,7 @@ void beep_time()
   }
   hora = timeinfo.tm_hour;
   Serial.println(hora);
-  if (hora >= 9 && hora <= 21) // rango de 9AM a 10 AM
+  if (hora <= 21 && hora > 9) // rango de 9AM a 10 AM
   {
     wakeup_2h();
   }
@@ -619,7 +619,7 @@ double Ctimer(void)
 
 void battery()
 {
-  adc0 = ((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745); // leemos el valor analógico presente en el pin
+  adc0 = ((ads.readADC_SingleEnded(0) - 730) * 100) / (948 - 730); // leemos el valor analógico presente en el pin
   if (adc0 >= 100)
   {
     adc0 = 100;
@@ -634,10 +634,10 @@ void battery()
     ledRojo();
     beep_buzzer(beep_battery);
 
-  case 10 ... 30:
+  case 10 ... 20:
     ledRojo();
     break;
-  case 31 ... 80:
+  case 21 ... 80:
     ledAzul();
     break;
   default:
@@ -650,7 +650,7 @@ void battery()
 
 void bateria(int *porcentaje)
 {
-  int porcent = (((ads.readADC_SingleEnded(0) - 745) * 100) / (948 - 745)); // leemos el valor analógico presente en el pin
+  int porcent = (((ads.readADC_SingleEnded(0) - 730) * 100) / (948 - 730)); // leemos el valor analógico presente en el pin
   if (porcent >= 100)
     *porcentaje = 100;
   else if (porcent <= 0)
@@ -665,7 +665,6 @@ void loop()
   // Serial.println(macStr);
   //  Código indicador de batería//
   /*****************************/
-
   if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
   {
     ledNaranja();
@@ -695,6 +694,20 @@ void loop()
     battery();
     /***********************/
     // Cierre código indicador de batería
+    //**********************/
+    // // Despertar al ESP32 cuando se conecte a la red
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+    // Apagar el ESP32 cuando no tenga suficiente batería
+    if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
+    {
+      Serial.println("No tengo tension");
+      esp_deep_sleep_start();
+    }
+    while (digitalRead(GPIO_NUM_4) == 1)
+    {
+      battery();
+    }
+    /***********************/
 
     preferences.begin("myPreferences", true); // Sentencia para guardar valores en memoria no volatil
 
@@ -865,18 +878,18 @@ void loop()
       }
     }
     /***********************/
-    // // Despertar al ESP32 cuando se conecte a la red
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
-    // Apagar el ESP32 cuando no tenga suficiente batería
-    if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
-    {
-      Serial.println("No tengo tension");
-      esp_deep_sleep_start();
-    }
-    while (digitalRead(GPIO_NUM_4) == 1)
-    {
-      battery();
-    }
+    // // // Despertar al ESP32 cuando se conecte a la red
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+    // // Apagar el ESP32 cuando no tenga suficiente batería
+    // if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
+    // {
+    //   Serial.println("No tengo tension");
+    //   esp_deep_sleep_start();
+    // }
+    // while (digitalRead(GPIO_NUM_4) == 1)
+    // {
+    //   battery();
+    // }
 
     // Despertar al ESP32 cuando se mueva el MPU
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
