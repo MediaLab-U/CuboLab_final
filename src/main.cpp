@@ -177,24 +177,35 @@ void beep_buzzer(int modo)
   case 0:
     if (buzzer_flag == true)
     {
-      tone(BUZZER_PIN, 800, 100);
-      tone(BUZZER_PIN, 0, 100);
-      tone(BUZZER_PIN, 800, 100);
-      tone(BUZZER_PIN, 0, 100);
+      analogWrite(GPIO_NUM_18, 80);
+      delay(100);
+      analogWrite(GPIO_NUM_18, 0);
+      delay(100);
+      analogWrite(GPIO_NUM_18, 80);
+      delay(100);
+      analogWrite(GPIO_NUM_18, 0);
       buzzer_flag = false;
     }
     break;
   case 1:
-    tone(BUZZER_PIN, 1500, 100);
-    tone(BUZZER_PIN, 0, 100);
-    tone(BUZZER_PIN, 1500, 100);
-    tone(BUZZER_PIN, 0, 100);
-    tone(BUZZER_PIN, 1500, 100);
-    tone(BUZZER_PIN, 0, 100);
+    analogWrite(GPIO_NUM_18, 80);
+    delay(100);
+    analogWrite(GPIO_NUM_18, 0);
+    delay(100);
+    analogWrite(GPIO_NUM_18, 80);
+    delay(100);
+    analogWrite(GPIO_NUM_18, 0);
+    delay(100);
+    analogWrite(GPIO_NUM_18, 80);
+    delay(100);
+    analogWrite(GPIO_NUM_18, 0);
     break;
   case 2:
-    tone(BUZZER_PIN, 800, 100);
-    tone(BUZZER_PIN, 0, 100);
+    // tone(BUZZER_PIN, 800, 100);
+    analogWrite(GPIO_NUM_18, 80);
+    delay(100);
+    analogWrite(GPIO_NUM_18, 0);
+    // tone(BUZZER_PIN, 0, 100);
     break;
   }
 }
@@ -494,6 +505,7 @@ void setup()
 
     if (x == 10)
     {
+      esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
       ledRojo();
       delay(3000);
       ledApagado();
@@ -619,7 +631,7 @@ double Ctimer(void)
 
 void battery()
 {
-  adc0 = ((ads.readADC_SingleEnded(0) - 730) * 100) / (948 - 730); // leemos el valor analógico presente en el pin
+  adc0 = ((ads.readADC_SingleEnded(0) - 700) * 100) / (948 - 700); // leemos el valor analógico presente en el pin
   if (adc0 >= 100)
   {
     adc0 = 100;
@@ -694,20 +706,6 @@ void loop()
     battery();
     /***********************/
     // Cierre código indicador de batería
-    //**********************/
-    // // Despertar al ESP32 cuando se conecte a la red
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
-    // Apagar el ESP32 cuando no tenga suficiente batería
-    if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
-    {
-      Serial.println("No tengo tension");
-      esp_deep_sleep_start();
-    }
-    while (digitalRead(GPIO_NUM_4) == 1)
-    {
-      battery();
-    }
-    /***********************/
 
     preferences.begin("myPreferences", true); // Sentencia para guardar valores en memoria no volatil
 
@@ -878,18 +876,18 @@ void loop()
       }
     }
     /***********************/
-    // // // Despertar al ESP32 cuando se conecte a la red
-    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
-    // // Apagar el ESP32 cuando no tenga suficiente batería
-    // if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
-    // {
-    //   Serial.println("No tengo tension");
-    //   esp_deep_sleep_start();
-    // }
-    // while (digitalRead(GPIO_NUM_4) == 1)
-    // {
-    //   battery();
-    // }
+    // // Despertar al ESP32 cuando se conecte a la red
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+    // Apagar el ESP32 cuando no tenga suficiente batería
+    if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
+    {
+      Serial.println("No tengo tension");
+      esp_deep_sleep_start();
+    }
+    while (digitalRead(GPIO_NUM_4) == 1)
+    {
+      battery();
+    }
 
     // Despertar al ESP32 cuando se mueva el MPU
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
