@@ -631,7 +631,7 @@ double Ctimer(void)
 
 void battery()
 {
-  adc0 = ((ads.readADC_SingleEnded(0) - 700) * 100) / (948 - 700); // leemos el valor analógico presente en el pin
+  adc0 = ((ads.readADC_SingleEnded(0) - 630) * 100) / (948 - 630); // leemos el valor analógico presente en el pin
   if (adc0 >= 100)
   {
     adc0 = 100;
