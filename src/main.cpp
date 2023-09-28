@@ -431,8 +431,6 @@ void setup()
   if (!ads.begin())
   {
     Serial.println("Failed to initialize ADS.");
-    // while (1)
-    //   ;
   }
 
   preferences.begin("myPreferences", false);
