@@ -882,10 +882,10 @@ void loop()
       Serial.println("No tengo tension");
       esp_deep_sleep_start();
     }
-    while (digitalRead(GPIO_NUM_4) == 1)
-    {
-      battery();
-    }
+    // while (digitalRead(GPIO_NUM_4) == 1)
+    // {
+    //   battery();
+    // }
 
     // Despertar al ESP32 cuando se mueva el MPU
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
