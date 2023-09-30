@@ -493,7 +493,7 @@ void setup()
     //   break;
     // }
 
-    x++;
+    x = x + 1;
     Serial.print(x);
 
     if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)
