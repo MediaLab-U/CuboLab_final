@@ -80,7 +80,7 @@ Ticker wifiScanTicker;
 char macStr[18];
 byte mac[6];
 
-int valor_cara = 0;
+int valor_cara = 99; //Inicializamos valor_cara a 99. Los valores válidos son entre 0 y 5.
 double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
@@ -715,9 +715,9 @@ void loop()
     if (abs((int)a.acceleration.x) > 8)
     {
       timeini = Ctimer();
-      if ((int)a.acceleration.x > 0 && valor_cara != 1)
+      if ((int)a.acceleration.x > 0 && valor_cara != 2)
       {
-        valor_cara = 1;
+        valor_cara = 2;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
@@ -739,9 +739,9 @@ void loop()
           trabajoRealizado = true;
         }
       }
-      else if ((int)a.acceleration.x < 0 && valor_cara != 6)
+      else if ((int)a.acceleration.x < 0 && valor_cara != 4)
       {
-        valor_cara = 6;
+        valor_cara = 4;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
@@ -769,9 +769,9 @@ void loop()
     if (abs((int)a.acceleration.y) > 8)
     {
       timeini = Ctimer();
-      if ((int)a.acceleration.y > 0 && valor_cara != 4)
+      if ((int)a.acceleration.y > 0 && valor_cara != 3)
       {
-        valor_cara = 4;
+        valor_cara = 3;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
@@ -793,9 +793,9 @@ void loop()
           trabajoRealizado = true;
         }
       }
-      else if ((int)a.acceleration.y < 0 && valor_cara != 2)
+      else if ((int)a.acceleration.y < 0 && valor_cara != 1)
       {
-        valor_cara = 2;
+        valor_cara = 1;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
@@ -848,9 +848,9 @@ void loop()
           trabajoRealizado = true;
         }
       }
-      else if ((int)a.acceleration.z < 0 && valor_cara != 3)
+      else if ((int)a.acceleration.z < 0 && valor_cara != 0)
       {
-        valor_cara = 3;
+        valor_cara = 0;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
