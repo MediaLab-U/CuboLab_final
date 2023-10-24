@@ -658,6 +658,7 @@ void battery()
   delay(1000);
 }
 
+
 void bateria(int *porcentaje)
 {
   int porcent = (((ads.readADC_SingleEnded(0) - 730) * 100) / (948 - 730)); // leemos el valor analógico presente en el pin
