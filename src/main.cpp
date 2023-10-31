@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
-// #include <Wire.h>
 #include <esp_sleep.h>
 #include <Preferences.h>
 #include <WiFi.h>
@@ -10,10 +9,12 @@
 #include <WebServer.h>
 #include "ticker.h"
 #include <LITTLEFS.h>
+
 // Convertidor Analogico-Digital y comunicacion I2C
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
+
 // Horario
 #include "Time.h"
 
@@ -21,10 +22,10 @@
 #define led_b 25
 #define led_r 27
 
-//  #define buzzer_pin 35
 //  Pines y dirección I2C
 #define SDA_PIN 21
 #define SCL_PIN 22
+
 // #define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
 #define pin_tension 4
 
@@ -60,13 +61,9 @@ const char *password = "cubolab00";
 // Variables donde se guardan los datos del wifi
 String cuboSSID = "";
 String cuboPassword = "";
-// String ssid1 = "";
-// String password1 = "";
 
 String listaredes = "";
-// int numredes;
 
-// bool wifiScanCompleted = false;
 bool scanningComplete = false;
 
 WebServer server(80);
@@ -87,9 +84,6 @@ String actual;
 
 void ledAzul()
 {
-  // pinMode(led_b, OUTPUT);
-  // pinMode(led_r, OUTPUT);
-  // pinMode(led_g, OUTPUT);
   digitalWrite(led_b, LOW);
   digitalWrite(led_g, HIGH);
   digitalWrite(led_r, HIGH);
@@ -97,9 +91,6 @@ void ledAzul()
 
 void ledVerde()
 {
-  // pinMode(led_b, OUTPUT);
-  // pinMode(led_r, OUTPUT);
-  // pinMode(led_g, OUTPUT);
   digitalWrite(led_b, HIGH);
   digitalWrite(led_g, LOW);
   digitalWrite(led_r, HIGH);
@@ -107,9 +98,6 @@ void ledVerde()
 
 void ledRojo()
 {
-  // pinMode(led_b, OUTPUT);
-  // pinMode(led_r, OUTPUT);
-  // pinMode(led_g, OUTPUT);
   digitalWrite(led_b, HIGH);
   digitalWrite(led_g, HIGH);
   digitalWrite(led_r, LOW);
@@ -117,19 +105,20 @@ void ledRojo()
 
 void ledNaranja()
 {
-  // pinMode(led_b,OUTPUT);
-  // pinMode(led_r,OUTPUT);
-  // pinMode(led_g,OUTPUT);
   analogWrite(led_b, 220);
   analogWrite(led_g, 130);
   analogWrite(led_r, 120);
 }
 
+void ledAmarillo() //27/10/23_Añadido Ramon.
+{
+  analogWrite(led_b, LOW);
+  analogWrite(led_g, LOW);
+  analogWrite(led_r, HIGH);
+}
+
 void ledBlanco()
 {
-  // pinMode(led_b,OUTPUT);
-  // pinMode(led_r,OUTPUT);
-  // pinMode(led_g,OUTPUT);
   digitalWrite(led_b, LOW);
   digitalWrite(led_g, LOW);
   digitalWrite(led_r, LOW);
@@ -137,9 +126,6 @@ void ledBlanco()
 
 void ledApagado()
 {
-  // pinMode(led_b,OUTPUT);
-  // pinMode(led_r,OUTPUT);
-  // pinMode(led_g,OUTPUT);
   digitalWrite(led_b, HIGH);
   digitalWrite(led_g, HIGH);
   digitalWrite(led_r, HIGH);
@@ -241,12 +227,6 @@ void beep_time()
 void cierreconfig()
 {
   // Código a ejecutar cuando se alcance el tiempo deseado
-  //     WiFi.disconnect(true);
-  // WiFi.begin(cuboSSID.c_str(), cuboPassword.c_str());
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(500);
-  //   Serial.print(".");
-  // }
   if (modoconfig == true)
   {
     WiFi.disconnect(true);
@@ -303,12 +283,6 @@ void escanredes()
   wifiScanTicker.detach();
 }
 
-// void scanNetworks()
-// {
-
-//   wifiScanTicker.detach();
-//   scanNetworksAsync();
-// }
 
 ///////////////////////////////////////////////
 void handleRoot()
@@ -389,10 +363,6 @@ void handleSave()
   preferences.putString("ssid", cuboSSID);
   preferences.putString("pass", cuboPassword);
 
-  // Serial.println("");
-  // Serial.println("Conexión establecida");
-  // Serial.print("Dirección IP: ");
-  // Serial.println(WiFi.localIP());
   modoconfig = false;
   timer.detach();
 }
@@ -402,10 +372,6 @@ void IRAM_ATTR handleInterrupt()
   Serial.println("MOVIMIENTO DETECTADO!!!");
 }
 
-// void IRAM_ATTR cargando()
-// {
-//   Serial.println("Conectado a bateria");
-// }
 
 void setup()
 {
@@ -433,17 +399,11 @@ void setup()
     Serial.println("Failed to initialize ADS.");
   }
 
+  //Recoge datos en memoria no volátil
   preferences.begin("myPreferences", false);
 
   // sistema de archivos para imagenes de la pagina de config
   LittleFS.begin();
-
-  // Comenzar conexión I2C
-  // Wire.begin(SDA_PIN, SCL_PIN);
-
-  // Wire.beginTransmission(MPU6050_I2C_ADDRESS);
-  // Wire.write(0x6B); // Dirección del registro de configuración del MPU6050
-  // WiFi.scanNetworks(onScanComplete);
 
   // Buzzer
   pinMode(BUZZER_PIN, OUTPUT);
@@ -455,10 +415,12 @@ void setup()
 
   // Configuración para dejar activos los pines de batería
   // Configurar los pines 4, 5 y 6 como entrada
+  //Estas cuatro líneas, creemos que no funcionan
   gpio_set_direction(GPIO_NUM_25, GPIO_MODE_INPUT);
   gpio_set_direction(GPIO_NUM_26, GPIO_MODE_INPUT);
   gpio_set_direction(GPIO_NUM_27, GPIO_MODE_INPUT);
   gpio_set_direction(GPIO_NUM_14, GPIO_MODE_INPUT);
+
   // Habilitar la retención de pines durante el modo de bajo consumo
   gpio_deep_sleep_hold_en();
 
@@ -488,11 +450,6 @@ void setup()
     ledApagado();
     delay(800);
 
-    // if (WiFi.status() == WL_CONNECTED)
-    // {
-    //   break;
-    // }
-
     x = x + 1;
     Serial.print(x);
 
@@ -510,13 +467,8 @@ void setup()
       Serial.println("No se ha podido conectar a la red WIFI");
       esp_deep_sleep_start();
     }
-    //////////////////////////////////////////////////
-    // Convertidor Analogico-Digital
   }
-  // Convertidor Analogico-Digital
-  // remember.attach(30, beep_remember);
-  // timer.attach(120.0, cierreconfig);
-  // remember.attach(30, beep_buzzer,beep_battery);
+
 
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -529,9 +481,6 @@ void setup()
     sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     mac[0] = 0;
     Serial.println(macStr);
-
-    // while (!Serial)
-    //   delay(1000); // will pause Zero, Leonardo, etc until serial console opens
 
     Serial.println("Adafruit MPU6050 test!");
     mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
@@ -603,8 +552,7 @@ void setup()
 
     // Buzzer wakeup
     beep_time();
-    // Close
-    // attachInterrupt(digitalPinToInterrupt(4), cargando, RISING);
+
   }
   if (modoconfig == false)
   {
@@ -647,8 +595,8 @@ void battery()
   case 10 ... 20:
     ledRojo();
     break;
-  case 21 ... 80:
-    ledAzul();
+  case 21 ... 70:
+    ledAmarillo();   //27.10.23 Cambiado por Ramón
     break;
   default:
     ledVerde();
@@ -672,7 +620,7 @@ void bateria(int *porcentaje)
 void loop()
 {
   server.handleClient();
-  // Serial.println(macStr);
+
   //  Código indicador de batería//
   /*****************************/
   if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
@@ -701,7 +649,9 @@ void loop()
   // Modo funcionamiento normal
   if (WiFi.status() == WL_CONNECTED && modoconfig == false)
   {
+    //Muesta con leds la carga de la batería
     battery();
+
     /***********************/
     // Cierre código indicador de batería
 
@@ -882,10 +832,6 @@ void loop()
       Serial.println("No tengo tension");
       esp_deep_sleep_start();
     }
-    // while (digitalRead(GPIO_NUM_4) == 1)
-    // {
-    //   battery();
-    // }
 
     // Despertar al ESP32 cuando se mueva el MPU
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
