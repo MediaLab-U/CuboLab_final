@@ -29,6 +29,9 @@
 // #define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
 #define pin_tension 4
 
+// #define la sensibilidad del acelerómetro
+#define sensibilidad_sensor 12
+
 Preferences preferences;
 
 // Convertidor Analogico-Digital
@@ -376,10 +379,9 @@ void IRAM_ATTR handleInterrupt()
 void setup()
 {
   Serial.begin(115200);
-  // Wire.begin();
-
+ 
   // Try to initialize!
-  mpu.begin();
+  //mpu.begin();
   if (!mpu.begin())
   {
     Serial.println("Failed to find MPU6050 chip");
@@ -390,13 +392,13 @@ void setup()
       esp_restart();
     }
   }
-  Serial.println("MPU6050 Found!");
+  Serial.println("MPU6050 funcionando correctamente.");
 
   // COmprobacion de q funciona (A Ramón no le mola esto)
-  ads.begin();
+  //ads.begin();
   if (!ads.begin())
   {
-    Serial.println("Failed to initialize ADS.");
+    Serial.println("Fallo del analógico-digital");
   }
 
   //Recoge datos en memoria no volátil
@@ -662,7 +664,7 @@ void loop()
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
     //------------EJE X-------------------//
-    if (abs((int)a.acceleration.x) > 8)
+    if (abs((int)a.acceleration.x) > sensibilidad_sensor)
     {
       timeini = Ctimer();
       if ((int)a.acceleration.x > 0 && valor_cara != 2)
@@ -718,7 +720,7 @@ void loop()
 //Ramon...prueba de github
 
     //------------EJE Y-------------------//
-    if (abs((int)a.acceleration.y) > 8)
+    if (abs((int)a.acceleration.y) > sensibilidad_sensor)
     {
       timeini = Ctimer();
       if ((int)a.acceleration.y > 0 && valor_cara != 3)
@@ -772,7 +774,7 @@ void loop()
     }
 
     //------------EJE Z-------------------//
-    if (abs((int)a.acceleration.z) > 8)
+    if (abs((int)a.acceleration.z) > sensibilidad_sensor)
     {
       Serial.println("Valor cara:" + valor_cara);
       timeini = Ctimer();
