@@ -29,9 +29,6 @@
 // #define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
 #define pin_tension 4
 
-// #define la sensibilidad del acelerómetro
-#define sensibilidad_sensor 12
-
 Preferences preferences;
 
 // Convertidor Analogico-Digital
