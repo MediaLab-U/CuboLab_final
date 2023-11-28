@@ -9,5 +9,9 @@
         "string_view": "cpp",
         "initializer_list": "cpp"
     },
+<<<<<<< Updated upstream
     "cmake.configureOnOpen": false
+=======
+    "cmake.configureOnOpen": true
+>>>>>>> Stashed changes
 }

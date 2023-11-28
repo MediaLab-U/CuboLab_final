@@ -283,8 +283,6 @@ void escanredes()
   wifiScanTicker.detach();
 }
 
-
-///////////////////////////////////////////////
 void handleRoot()
 {
   if (scanningComplete)
@@ -310,7 +308,6 @@ void handleRoot()
     escanredes(); // ejecutar función escanear redes
   }
 }
-////////////////////////////////////////////////////////////
 
 void handleSelect()
 {
@@ -372,34 +369,33 @@ void IRAM_ATTR handleInterrupt()
   Serial.println("MOVIMIENTO DETECTADO!!!");
 }
 
-
 void setup()
 {
+  //Establecemos en 115200 baudios (bits/s) la transmisión serie de datos
   Serial.begin(115200);
   // Wire.begin();
 
-  // Try to initialize!
-  mpu.begin();
+  //Intenta inicializar el ACELEROMETRO MPU6050
+  //Si no se inicializa, da ERROR ()
   if (!mpu.begin())
   {
-    Serial.println("Failed to find MPU6050 chip");
+    Serial.println("Falla el acelerómetro MPU6050");
     while (1)
     {
-      delay(1000);
-      Serial.println("Reiniciando ESP32");
-      esp_restart();
+      delay(1000); // Espera 1 segundo
+      Serial.println ("Reiniciando ESP32"); 
+      esp_restart(); //Reinicia ESP32
     }
   }
-  Serial.println("MPU6050 Found!");
+  Serial.println ("¡MPU6050 encontrado!");
 
-  // COmprobacion de q funciona (A Ramón no le mola esto)
-  ads.begin();
+  // Comprobacion de que funciona el convertidor analógico-digital (A Ramón no le mola esto)
   if (!ads.begin())
   {
-    Serial.println("Failed to initialize ADS.");
+    Serial.println("Error en el convertidor analógico-digital.");
   }
 
-  //Recoge datos en memoria no volátil
+  //Recoge datos en memoria no volátil (donde guarda los datos wifi)
   preferences.begin("myPreferences", false);
 
   // sistema de archivos para imagenes de la pagina de config
@@ -431,11 +427,11 @@ void setup()
   pinMode(led_g, OUTPUT);
   pinMode(led_b, OUTPUT);
   pinMode(led_r, OUTPUT);
+
   ledApagado();
 
   // DESPERTAR EL ESP CUANDO SE CONECTA A LA FUENTE DE ALIMENTACIÓN
   // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
-
   Serial.print("Conectando a la red WiFi.");
   delay(100);
   Serial.print(".");
@@ -554,6 +550,7 @@ void setup()
     beep_time();
 
   }
+
   if (modoconfig == false)
   {
     mpu.setMotionInterrupt(true);
@@ -608,7 +605,7 @@ void battery()
 
 void bateria(int *porcentaje)
 {
-  int porcent = (((ads.readADC_SingleEnded(0) - 730) * 100) / (948 - 730)); // leemos el valor analógico presente en el pin
+  int porcent = (((ads.readADC_SingleEnded(0) - 630) * 100) / (948 - 630)); // leemos el valor analógico presente en el pin
   if (porcent >= 100)
     *porcentaje = 100;
   else if (porcent <= 0)
@@ -619,6 +616,11 @@ void bateria(int *porcentaje)
 
 void loop()
 {
+  /*
+  cuando el ESP32 actúa como un servidor web (lo cual parece ser el caso en este código), 
+  server.handleClient(); se encarga de gestionar las solicitudes HTTP entrantes 
+  de los clientes, ya sea para servir páginas web, manejar solicitudes de API, 
+  o realizar cualquier acción definida por las rutas configuradas en el servidor.*/
   server.handleClient();
 
   //  Código indicador de batería//
@@ -646,14 +648,12 @@ void loop()
     iniconfig = false; // cierre de la variable de inicio al ser desconectado
   }
 
+  
   // Modo funcionamiento normal
   if (WiFi.status() == WL_CONNECTED && modoconfig == false)
   {
-    //Muesta con leds la carga de la batería
+    //Muestra en el LED, la carga de la batería: rojo, amarillo o verde
     battery();
-
-    /***********************/
-    // Cierre código indicador de batería
 
     preferences.begin("myPreferences", true); // Sentencia para guardar valores en memoria no volatil
 
