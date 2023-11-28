@@ -29,6 +29,9 @@
 // #define MPU6050_I2C_ADDRESS 0x68 //Suele ser 0x68 o 0x69
 #define pin_tension 4
 
+// #define la sensibilidad del acelerómetro
+#define sensibilidad_sensor 8
+
 Preferences preferences;
 
 // Convertidor Analogico-Digital
@@ -376,10 +379,9 @@ void IRAM_ATTR handleInterrupt()
 void setup()
 {
   Serial.begin(115200);
-  // Wire.begin();
-
+ 
   // Try to initialize!
-  mpu.begin();
+  //mpu.begin();
   if (!mpu.begin())
   {
     Serial.println("Failed to find MPU6050 chip");
@@ -390,13 +392,13 @@ void setup()
       esp_restart();
     }
   }
-  Serial.println("MPU6050 Found!");
+  Serial.println("MPU6050 funcionando correctamente.");
 
   // COmprobacion de q funciona (A Ramón no le mola esto)
-  ads.begin();
+  //ads.begin();
   if (!ads.begin())
   {
-    Serial.println("Failed to initialize ADS.");
+    Serial.println("Fallo del analógico-digital");
   }
 
   //Recoge datos en memoria no volátil
