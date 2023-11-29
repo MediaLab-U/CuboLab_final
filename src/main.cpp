@@ -60,6 +60,7 @@ int flag = false;
 int modoconfig = false;
 int iniconfig = false;
 int voltaje;
+
 const char *ssid = "ConfigCUBO";
 const char *password = "cubolab00";
 // Variables donde se guardan los datos del wifi
@@ -85,6 +86,8 @@ int valor_cara = 99; //Inicializamos valor_cara a 99. Los valores válidos son e
 double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
+
+const int NUM_INTENTOS_WIFI = 10;
 
 void ledAzul()
 {
@@ -287,7 +290,6 @@ void escanredes()
   wifiScanTicker.detach();
 }
 
-
 ///////////////////////////////////////////////
 void handleRoot()
 {
@@ -376,16 +378,11 @@ void IRAM_ATTR handleInterrupt()
   Serial.println("MOVIMIENTO DETECTADO!!!");
 }
 
-//hola
-void setup()
-{
-  Serial.begin(115200);
- 
-  // Try to initialize!
-  mpu.begin();
-  if (!mpu.begin())
-  {
-    Serial.println("Failed to find MPU6050 chip");
+
+void inicializarMPU() {
+  if (!mpu.begin()) {
+    // Manejar el fallo de inicialización
+    Serial.println("MPU6050 INCORRECTO");
     while (1)
     {
       delay(1000);
@@ -394,85 +391,87 @@ void setup()
     }
   }
   Serial.println("MPU6050 funcionando correctamente.");
+}
 
-  // COmprobacion de q funciona (A Ramón no le mola esto)
-  ads.begin();
+void inicializarADS() {
   if (!ads.begin())
-  {
-    Serial.println("Fallo del analógico-digital");
-  }
+    {
+      Serial.println("Fallo del analógico-digital");
+    }
+}
 
+void configurarMemoriaNoVolatil() {
   //Recoge datos en memoria no volátil
   preferences.begin("myPreferences", false);
+}
 
+
+void configurarFileSystem() {
   // sistema de archivos para imagenes de la pagina de config
   LittleFS.begin();
+}
 
+void configurarBuzzer() {
   // Buzzer
   pinMode(BUZZER_PIN, OUTPUT);
+}
 
+void conectarWiFi() {
   // Conexión a la red WiFi
   String ssid1 = preferences.getString("ssid", "medialab");
   String password1 = preferences.getString("pass", "medialab");
   WiFi.begin(ssid1.c_str(), password1.c_str());
+}
 
-  // Configuración para dejar activos los pines de batería
+void configurarPinesBateria() {
+    // Configuración para dejar activos los pines de batería
   // Configurar los pines 4, 5 y 6 como entrada
   //Estas cuatro líneas, creemos que no funcionan
   gpio_set_direction(GPIO_NUM_25, GPIO_MODE_INPUT);
   gpio_set_direction(GPIO_NUM_26, GPIO_MODE_INPUT);
   gpio_set_direction(GPIO_NUM_27, GPIO_MODE_INPUT);
   gpio_set_direction(GPIO_NUM_14, GPIO_MODE_INPUT);
+}
 
+void configurarModoBajoConsumo() 
+{
   // Habilitar la retención de pines durante el modo de bajo consumo
   gpio_deep_sleep_hold_en();
-
-  // Configurar el modo de bajo consumo para reducir el consumo de energía
+    // Configurar el modo de bajo consumo para reducir el consumo de energía
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO);
+}
 
+void configurarPinesLeds() 
+{
   // Configuración de los pines para los leds
   pinMode(led_g, OUTPUT);
   pinMode(led_b, OUTPUT);
   pinMode(led_r, OUTPUT);
   ledApagado();
+}
 
-  // DESPERTAR EL ESP CUANDO SE CONECTA A LA FUENTE DE ALIMENTACIÓN
-  // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
-
+void esperarConexionWiFi() 
+{
+  
   Serial.print("Conectando a la red WiFi.");
-  delay(100);
-  Serial.print(".");
-  delay(100);
-  Serial.println(".");
 
-  int x = 0;
-  while ((WiFi.status() != WL_CONNECTED))
+  for (int intento = 0; intento < NUM_INTENTOS_WIFI; intento++) 
   {
     ledAzul();
     delay(800);
     ledApagado();
     delay(800);
 
-    x = x + 1;
-    Serial.print(x);
-
-    if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false)
+    if (WiFi.status() == WL_CONNECTED) 
     {
-      break;
-    }
-
-    if (x == 10)
-    {
-      esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
-      ledRojo();
-      delay(3000);
-      ledApagado();
-      Serial.println("No se ha podido conectar a la red WIFI");
-      esp_deep_sleep_start();
+      Serial.println("\nConexión exitosa");
+      return;
     }
   }
+}
 
-
+void configurarMPU() 
+{
   if (WiFi.status() == WL_CONNECTED)
   {
     Serial.println("Conexión exitosa");
@@ -489,6 +488,7 @@ void setup()
     mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
     Serial.println("seleccionado rango");
     Serial.print("Accelerometer range set to: ");
+    
     switch (mpu.getAccelerometerRange())
     {
     case MPU6050_RANGE_2_G:
@@ -504,59 +504,91 @@ void setup()
       Serial.println("+-16G");
       break;
     }
+
     mpu.setGyroRange(MPU6050_RANGE_2000_DEG);
     Serial.print("Gyro range set to: ");
     switch (mpu.getGyroRange())
     {
-    case MPU6050_RANGE_250_DEG:
-      Serial.println("+- 250 deg/s");
-      break;
-    case MPU6050_RANGE_500_DEG:
-      Serial.println("+- 500 deg/s");
-      break;
-    case MPU6050_RANGE_1000_DEG:
-      Serial.println("+- 1000 deg/s");
-      break;
-    case MPU6050_RANGE_2000_DEG:
-      Serial.println("+- 2000 deg/s");
-      break;
+      case MPU6050_RANGE_250_DEG:
+        Serial.println("+- 250 deg/s");
+        break;
+      case MPU6050_RANGE_500_DEG:
+        Serial.println("+- 500 deg/s");
+        break;
+      case MPU6050_RANGE_1000_DEG:
+        Serial.println("+- 1000 deg/s");
+        break;
+      case MPU6050_RANGE_2000_DEG:
+        Serial.println("+- 2000 deg/s");
+        break;
     }
 
     mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);
     Serial.print("Filter bandwidth set to: ");
+    
     switch (mpu.getFilterBandwidth())
     {
-    case MPU6050_BAND_260_HZ:
-      Serial.println("260 Hz");
-      break;
-    case MPU6050_BAND_184_HZ:
-      Serial.println("184 Hz");
-      break;
-    case MPU6050_BAND_94_HZ:
-      Serial.println("94 Hz");
-      break;
-    case MPU6050_BAND_44_HZ:
-      Serial.println("44 Hz");
-      break;
-    case MPU6050_BAND_21_HZ:
-      Serial.println("21 Hz");
-      break;
-    case MPU6050_BAND_10_HZ:
-      Serial.println("10 Hz");
-      break;
-    case MPU6050_BAND_5_HZ:
-      Serial.println("5 Hz");
-      break;
+      case MPU6050_BAND_260_HZ:
+        Serial.println("260 Hz");
+        break;
+      case MPU6050_BAND_184_HZ:
+        Serial.println("184 Hz");
+        break;
+      case MPU6050_BAND_94_HZ:
+        Serial.println("94 Hz");
+        break;
+      case MPU6050_BAND_44_HZ:
+        Serial.println("44 Hz");
+        break;
+      case MPU6050_BAND_21_HZ:
+        Serial.println("21 Hz");
+        break;
+      case MPU6050_BAND_10_HZ:
+        Serial.println("10 Hz");
+        break;
+      case MPU6050_BAND_5_HZ:
+        Serial.println("5 Hz");
+        break;
     }
 
-    // Star time
+  }
+}
+
+void configurarHora() {
+    // Start time
     Serial.setDebugOutput(true);
     initTime("CET-1CEST,M3.5.0/1,M10.5.0");
+}
 
+void activarBuzzer() {
     // Buzzer wakeup
     beep_time();
+}
 
-  }
+//hola
+void setup()
+{
+  Serial.begin(115200);
+ 
+  // Try to initialize!
+  //mpu.begin();
+
+  inicializarMPU();
+  inicializarADS();
+  configurarMemoriaNoVolatil();
+  configurarFileSystem();
+  configurarBuzzer();
+  conectarWiFi();
+  configurarPinesBateria();
+  configurarModoBajoConsumo();
+  configurarPinesLeds();
+  esperarConexionWiFi();
+  configurarMPU();
+  configurarHora();
+  activarBuzzer();
+
+
+  
   if (modoconfig == false)
   {
     mpu.setMotionInterrupt(true);
@@ -649,7 +681,7 @@ void loop()
     iniconfig = false; // cierre de la variable de inicio al ser desconectado
   }
 
-  // Modo funcionamiento normal
+  // Modo funcionamiento NORMAL
   if (WiFi.status() == WL_CONNECTED && modoconfig == false)
   {
     //Muesta con leds la carga de la batería
@@ -664,57 +696,40 @@ void loop()
     /*************************/
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
+    
+    
     //------------EJE X-------------------//
-    if (abs((int)a.acceleration.x) > sensibilidad_sensor )
+    // ------------EJE X ramon------------------- hay que estructurar esto con una función que englobe los rtes ejes //
+    int x = (int)a.acceleration.x;
+
+    if (abs(x) > sensibilidad_sensor) 
     {
       timeini = Ctimer();
-      if ((int)a.acceleration.x > 0 && valor_cara != 2)
+
+      while (1) 
       {
-        valor_cara = 2;
-        while (1)
-        {
-          mpu.getEvent(&a, &g, &temp);
-          int x = (int)a.acceleration.x;
-          delay(1000);
-          if (x < 0 || abs(x) < sensibilidad_sensor || (Ctimer() - timeini) > 3)
-          {
-            break;
-          }
-        }
-        timefin = Ctimer() - timeini;
-        Serial.println(timefin);
-        if (timefin > 3)
-        {
-          timeini = 0;
-          timefin = 0;
-          actual = "Estoy muy feliz";
-          Serial.println(actual);
-          trabajoRealizado = true;
+        mpu.getEvent(&a, &g, &temp);
+        int newX = (int)a.acceleration.x;
+        delay(1000);
+
+        if (newX * x <= 0 || abs(newX) < sensibilidad_sensor || (Ctimer() - timeini) > 3) {
+          break;
         }
       }
-      else if ((int)a.acceleration.x < 0 && valor_cara != 4)
+
+      timefin = Ctimer() - timeini;
+      Serial.println(timefin);
+
+      if (timefin > 3) 
       {
-        valor_cara = 4;
-        while (1)
-        {
-          mpu.getEvent(&a, &g, &temp);
-          int x = (int)a.acceleration.x;
-          delay(1000);
-          if (x > 0 || abs(x) < sensibilidad_sensor || (Ctimer() - timeini) > 3)
-          {
-            break;
-          }
-        }
-        timefin = Ctimer() - timeini;
-        Serial.println(timefin);
-        if (timefin > 3)
-        {
-          timeini = 0;
-          timefin = 0;
-          actual = "Estoy muy mal";
-          Serial.println(actual);
-          trabajoRealizado = true;
-        }
+        timeini = 0;
+        timefin = 0;
+
+        actual = (x > 0) ? "Estoy muy feliz" : "Estoy muy mal";
+        valor_cara = (x > 0) ? 2 : 4;
+
+        Serial.println(actual);
+        trabajoRealizado = true;
       }
     }
 
@@ -831,10 +846,13 @@ void loop()
     /***********************/
     // // Despertar al ESP32 cuando se conecte a la red
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+
     // Apagar el ESP32 cuando no tenga suficiente batería
     if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
     {
       Serial.println("No tengo tension");
+
+      //Podríamos enviar un mensaje de alerta antes de ponerme a dormir
       esp_deep_sleep_start();
     }
 
@@ -889,4 +907,5 @@ void loop()
       esp_deep_sleep_start();
     }
   }
+
 }
