@@ -676,59 +676,57 @@ void leerCaraYGuardarValores()
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
     
-    
+    //Pongo elseif para que no entre si detectó un cambio   
     //------------EJE X-------------------//
     // ------------EJE X ramon------------------- hay que estructurar esto con una función que englobe los rtes ejes //
     int x = (int)a.acceleration.x;
-
+    int y = (int)a.acceleration.y;
+    int z = (int)a.acceleration.z;
     if (abs(x) > SENSIBILIDAD_SENSOR) 
     {
       timeini = Ctimer();
-      
-      Serial.println ("variable timeini: ");
-      Serial.println (timeini);
+      unsigned long tiempoEspera = 3000;  // 3 segundos de espera
+      unsigned long tiempoInicio = millis();
+      unsigned long tiempoUltimaLectura = tiempoInicio;
 
-      while (1) 
+      while (millis() - tiempoInicio <= tiempoEspera) 
       {
         mpu.getEvent(&a, &g, &temp);
         int newX = (int)a.acceleration.x;
-        delay(1000);
 
-        if (newX * x <= 0 || abs(newX) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3) {
+        if (newX * x <= 0 || abs(newX) < SENSIBILIDAD_SENSOR) {
           break;
+        }
+        if (millis() - tiempoUltimaLectura >= 1000) {
+          tiempoUltimaLectura = millis();
+          // Aquí puedes realizar acciones adicionales que necesiten ejecutarse cada segundo
         }
       }
 
       timefin = Ctimer() - timeini;
-      Serial.println ("variable timefin: ");
-      Serial.println (timefin);
 
       if (timefin > 3) 
       {
         timeini = 0;
         timefin = 0;
-
         actual = (x > 0) ? "Estoy muy feliz" : "Estoy muy mal";
         valor_cara = (x > 0) ? 2 : 4;
-
         Serial.println(actual);
         trabajoRealizado = true;
       }
     }
 
-//Ramon...prueba de github
-
     //------------EJE Y-------------------//
-    if (abs((int)a.acceleration.y) > SENSIBILIDAD_SENSOR)
+    else if (abs(y) > SENSIBILIDAD_SENSOR)
     {
       timeini = Ctimer();
-      if ((int)a.acceleration.y > 0 && valor_cara != 3)
+      if (y > 0 && valor_cara != 3)
       {
         valor_cara = 3;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
-          int y = (int)a.acceleration.y;
+          //int y = (int)a.acceleration.y;
           delay(1000);
           if (y < 0 || abs(y) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
@@ -746,13 +744,13 @@ void leerCaraYGuardarValores()
           trabajoRealizado = true;
         }
       }
-      else if ((int)a.acceleration.y < 0 && valor_cara != 1)
+      else if (y < 0 && valor_cara != 1)
       {
         valor_cara = 1;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
-          int y = (int)a.acceleration.y;
+          //int y = (int)a.acceleration.y;
           delay(1000);
           if (y > 0 || abs(y) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
@@ -760,7 +758,7 @@ void leerCaraYGuardarValores()
           }
         }
         timefin = Ctimer() - timeini;
-        Serial.println(timefin);
+
         if (timefin > 3)
         {
           timeini = 0;
@@ -773,17 +771,17 @@ void leerCaraYGuardarValores()
     }
 
     //------------EJE Z-------------------//
-    if (abs((int)a.acceleration.z) > SENSIBILIDAD_SENSOR)
+    else if (abs(z) > SENSIBILIDAD_SENSOR)
     {
-      Serial.println("Valor cara:" + valor_cara);
+      
       timeini = Ctimer();
-      if ((int)a.acceleration.z > 0 && valor_cara != 5)
+      if (z > 0 && valor_cara != 5)
       {
         valor_cara = 5;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
-          int z = (int)a.acceleration.z;
+          //int z = (int)a.acceleration.z;
           delay(1000);
           if (z < 0 || abs(z) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
@@ -791,23 +789,21 @@ void leerCaraYGuardarValores()
           }
         }
         timefin = Ctimer() - timeini;
-        Serial.println(timefin);
+
         if (timefin > 3)
         {
           timeini = 0;
           timefin = 0;
-          actual = "Estoy bastante mal";
-          Serial.println(actual);
           trabajoRealizado = true;
         }
       }
-      else if ((int)a.acceleration.z < 0 && valor_cara != 0)
+      else if (z < 0 && valor_cara != 0)
       {
         valor_cara = 0;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
-          int z = (int)a.acceleration.z;
+          //int z = (int)a.acceleration.z;
           delay(1000);
           if (z > 0 || abs(z) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
@@ -815,17 +811,18 @@ void leerCaraYGuardarValores()
           }
         }
         timefin = Ctimer() - timeini;
-        Serial.println(timefin);
+
         if (timefin > 3)
         {
           timeini = 0;
           timefin = 0;
           actual = "Estoy ni bien ni mal";
-          Serial.println(actual);
+
           trabajoRealizado = true;
         }
       }
     }
+    Serial.println("Valor cara:" + valor_cara);
     /***********************/
 }
     
