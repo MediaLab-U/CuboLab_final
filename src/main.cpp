@@ -456,12 +456,15 @@ void esperarConexionWiFi()
   
   Serial.print("Conectando a la red WiFi.");
 
-  for (int intento = 0; intento < NUM_INTENTOS_WIFI; intento++) 
+  unsigned long inicioConexion = millis();
+  unsigned long tiempoEspera = 800;
+
+  while (millis() - inicioConexion < NUM_INTENTOS_WIFI * 2 * tiempoEspera) 
   {
     ledAzul();
-    delay(800);
+    delay(tiempoEspera);
     ledApagado();
-    delay(800);
+    delay(tiempoEspera);
 
     if (WiFi.status() == WL_CONNECTED) 
     {
@@ -679,9 +682,12 @@ void leerCaraYGuardarValores()
     //Pongo elseif para que no entre si detectó un cambio   
     //------------EJE X-------------------//
     // ------------EJE X ramon------------------- hay que estructurar esto con una función que englobe los rtes ejes //
+    
+    /* Debajo he puesto código optimizado, tengo que ver si funciona
     int x = (int)a.acceleration.x;
     int y = (int)a.acceleration.y;
     int z = (int)a.acceleration.z;
+
     if (abs(x) > SENSIBILIDAD_SENSOR) 
     {
       timeini = Ctimer();
@@ -711,7 +717,6 @@ void leerCaraYGuardarValores()
         timefin = 0;
         actual = (x > 0) ? "Estoy muy feliz" : "Estoy muy mal";
         valor_cara = (x > 0) ? 2 : 4;
-        Serial.println(actual);
         trabajoRealizado = true;
       }
     }
@@ -734,7 +739,7 @@ void leerCaraYGuardarValores()
           }
         }
         timefin = Ctimer() - timeini;
-        Serial.println(timefin);
+
         if (timefin > 3)
         {
           timeini = 0;
@@ -822,8 +827,56 @@ void leerCaraYGuardarValores()
         }
       }
     }
-    Serial.println("Valor cara:" + valor_cara);
-    /***********************/
+    */
+
+
+
+  int valores[3] = {(int)a.acceleration.x, (int)a.acceleration.y, (int)a.acceleration.z};
+  String mensajes[] = {"Estoy muy feliz", "Estoy feliz", "Estoy ni bien ni mal", "Estoy mal", "Estoy bastante mal", "Estoy muy mal"};
+  int ejes[] = {0, 1, 2, 3, 4, 5}; // Correspondencia con los valores_cara
+
+  for (int i = 0; i < 3; ++i) 
+  {
+    int valor = valores[i];
+    if (abs(valor) > SENSIBILIDAD_SENSOR) 
+    {
+      timeini = Ctimer();
+      unsigned long tiempoEspera = 3000;  // 3 segundos de espera
+      unsigned long tiempoInicio = millis();
+      unsigned long tiempoUltimaLectura = tiempoInicio;
+
+      while (millis() - tiempoInicio <= tiempoEspera) 
+      {
+        mpu.getEvent(&a, &g, &temp);
+        int nuevoValor = valores[i];
+
+        if (nuevoValor * valor <= 0 || abs(nuevoValor) < SENSIBILIDAD_SENSOR) 
+        {
+          break;
+        }
+        if (millis() - tiempoUltimaLectura >= 1000) 
+        {
+          tiempoUltimaLectura = millis();
+          // Aquí puedes realizar acciones adicionales que necesiten ejecutarse cada segundo
+        }
+      }
+
+      timefin = Ctimer() - timeini;
+
+      if (timefin > 3) 
+      {
+        timeini = 0;
+        timefin = 0;
+        actual = mensajes[ejes[i]];
+        valor_cara = ejes[i];
+        trabajoRealizado = true;
+      }
+    }
+  }
+
+  Serial.println ("Valor cara: ");
+  Serial.println (valor_cara);
+  /***********************/
 }
     
 // Despertar al ESP32 según las condiciones
