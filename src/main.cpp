@@ -30,7 +30,8 @@
 #define pin_tension 4
 
 
-#define sensibilidad_sensor 8
+const int SENSIBILIDAD_SENSOR = 8;
+const int NUM_INTENTOS_WIFI = 10;
 
 
 Preferences preferences;
@@ -87,7 +88,7 @@ double timeini, timefin;
 bool trabajoRealizado = false;
 String actual;
 
-const int NUM_INTENTOS_WIFI = 10;
+
 
 void ledAzul()
 {
@@ -571,8 +572,7 @@ void setup()
   Serial.begin(115200);
  
   // Try to initialize!
-  //mpu.begin();
-
+ 
   inicializarMPU();
   inicializarADS();
   configurarMemoriaNoVolatil();
@@ -587,8 +587,6 @@ void setup()
   configurarHora();
   activarBuzzer();
 
-
-  
   if (modoconfig == false)
   {
     mpu.setMotionInterrupt(true);
@@ -652,14 +650,8 @@ void bateria(int *porcentaje)
     *porcentaje = porcent;
 }
 
-void loop()
+void modoConfiguracion()
 {
-  server.handleClient();
-
-  //  Código indicador de batería//
-  /*****************************/
-  if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
-  {
     ledNaranja();
     WiFi.disconnect(true);
     WiFi.softAP(ssid, password);
@@ -675,23 +667,10 @@ void loop()
     iniconfig = true;                  // variable para entrar una sola vez en modo config al ser conectado
     timer.attach(120.0, cierreconfig); // tiempo en segundos, al terminar ejecutará la funcion cierreconfig
     Serial.println("Modo punto de acceso iniciado");
-  }
-  else if (digitalRead(pin_tension) == LOW && iniconfig == true)
-  {
-    iniconfig = false; // cierre de la variable de inicio al ser desconectado
-  }
+}
 
-  // Modo funcionamiento NORMAL
-  if (WiFi.status() == WL_CONNECTED && modoconfig == false)
-  {
-    //Muesta con leds la carga de la batería
-    battery();
-
-    /***********************/
-    // Cierre código indicador de batería
-
-    preferences.begin("myPreferences", true); // Sentencia para guardar valores en memoria no volatil
-
+void leerCaraYGuardarValores()
+{
     // Código para leer la cara que está hacia arriba y guardar los valores
     /*************************/
     sensors_event_t a, g, temp;
@@ -702,9 +681,12 @@ void loop()
     // ------------EJE X ramon------------------- hay que estructurar esto con una función que englobe los rtes ejes //
     int x = (int)a.acceleration.x;
 
-    if (abs(x) > sensibilidad_sensor) 
+    if (abs(x) > SENSIBILIDAD_SENSOR) 
     {
       timeini = Ctimer();
+      
+      Serial.println ("variable timeini: ");
+      Serial.println (timeini);
 
       while (1) 
       {
@@ -712,13 +694,14 @@ void loop()
         int newX = (int)a.acceleration.x;
         delay(1000);
 
-        if (newX * x <= 0 || abs(newX) < sensibilidad_sensor || (Ctimer() - timeini) > 3) {
+        if (newX * x <= 0 || abs(newX) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3) {
           break;
         }
       }
 
       timefin = Ctimer() - timeini;
-      Serial.println(timefin);
+      Serial.println ("variable timefin: ");
+      Serial.println (timefin);
 
       if (timefin > 3) 
       {
@@ -736,7 +719,7 @@ void loop()
 //Ramon...prueba de github
 
     //------------EJE Y-------------------//
-    if (abs((int)a.acceleration.y) > sensibilidad_sensor)
+    if (abs((int)a.acceleration.y) > SENSIBILIDAD_SENSOR)
     {
       timeini = Ctimer();
       if ((int)a.acceleration.y > 0 && valor_cara != 3)
@@ -747,7 +730,7 @@ void loop()
           mpu.getEvent(&a, &g, &temp);
           int y = (int)a.acceleration.y;
           delay(1000);
-          if (y < 0 || abs(y) < sensibilidad_sensor || (Ctimer() - timeini) > 3)
+          if (y < 0 || abs(y) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
             break;
           }
@@ -771,7 +754,7 @@ void loop()
           mpu.getEvent(&a, &g, &temp);
           int y = (int)a.acceleration.y;
           delay(1000);
-          if (y > 0 || abs(y) < sensibilidad_sensor || (Ctimer() - timeini) > 3)
+          if (y > 0 || abs(y) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
             break;
           }
@@ -790,7 +773,7 @@ void loop()
     }
 
     //------------EJE Z-------------------//
-    if (abs((int)a.acceleration.z) > sensibilidad_sensor)
+    if (abs((int)a.acceleration.z) > SENSIBILIDAD_SENSOR)
     {
       Serial.println("Valor cara:" + valor_cara);
       timeini = Ctimer();
@@ -802,7 +785,7 @@ void loop()
           mpu.getEvent(&a, &g, &temp);
           int z = (int)a.acceleration.z;
           delay(1000);
-          if (z < 0 || abs(z) < sensibilidad_sensor || (Ctimer() - timeini) > 3)
+          if (z < 0 || abs(z) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
             break;
           }
@@ -826,7 +809,7 @@ void loop()
           mpu.getEvent(&a, &g, &temp);
           int z = (int)a.acceleration.z;
           delay(1000);
-          if (z > 0 || abs(z) < sensibilidad_sensor || (Ctimer() - timeini) > 3)
+          if (z > 0 || abs(z) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
             break;
           }
@@ -844,6 +827,11 @@ void loop()
       }
     }
     /***********************/
+}
+    
+// Despertar al ESP32 según las condiciones
+void despertarSegunCondiciones()
+{
     // // Despertar al ESP32 cuando se conecte a la red
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
 
@@ -858,7 +846,21 @@ void loop()
 
     // Despertar al ESP32 cuando se mueva el MPU
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);
+}
 
+void enviarADormir()
+{
+      // Código para enviar a dormir el SP32 y despertarlo cada 15 minutos
+      Serial.println("Me voy a dormir");
+
+      // Se va a dormir 2 horas
+      long long int TIME_TO_SLEEP = 7200000000LL; // 2h en us
+      esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP);
+      esp_deep_sleep_start();
+}
+    // Comprobación del trabajo realizado y envío de datos
+void manejarTrabajoRealizado()
+{
     // Parte encargada de comprobar si se ha realizado el trabajo, comprobar el valor anterior en memoria
     // y enviar los datos a la base de datos
     if (trabajoRealizado)
@@ -898,14 +900,49 @@ void loop()
 
       // Apagar el LED
       ledApagado();
-      // Código para enviar a dormi el SP32 y despertarlo cada 15 minutos
-      Serial.println("Me voy a dormir");
 
-      // Se va a dormir 2 horas
-      long long int TIME_TO_SLEEP = 7200000000LL; // 2h en us
-      esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP);
-      esp_deep_sleep_start();
+      enviarADormir();
     }
+}
+
+    
+    // Código para enviar a dormir el ESP32 y despertarlo cada 15 minutos
+
+void loop()
+{
+  server.handleClient();
+
+  //  Código indicador de batería//
+  /*****************************/
+  if (digitalRead(pin_tension) == HIGH && modoconfig == false && iniconfig == false) // entrar en modo config cuando se conecta al cargador
+  {
+    modoConfiguracion();
+  }
+  else if (digitalRead(pin_tension) == LOW && iniconfig == true)
+  {
+    iniconfig = false; // cierre de la variable de inicio al ser desconectado
+  }
+
+  // Modo funcionamiento NORMAL
+  if (WiFi.status() == WL_CONNECTED && modoconfig == false)
+  {
+    //Muesta con leds la carga de la batería
+    battery();
+
+    /***********************/
+    // Cierre código indicador de batería
+
+    preferences.begin("myPreferences", true); // Sentencia para guardar valores en memoria no volatil
+
+    leerCaraYGuardarValores();
+    
+    // Despertar al ESP32 según las condiciones
+    despertarSegunCondiciones();
+
+    // Comprobación del trabajo realizado y envío de datos
+    manejarTrabajoRealizado();
+
+
   }
 
 }
