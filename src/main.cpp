@@ -379,7 +379,6 @@ void IRAM_ATTR handleInterrupt()
   Serial.println("MOVIMIENTO DETECTADO!!!");
 }
 
-
 void inicializarMPU() {
   if (!mpu.begin()) {
     // Manejar el fallo de inicialización
@@ -468,7 +467,7 @@ void esperarConexionWiFi()
 
     if (WiFi.status() == WL_CONNECTED) 
     {
-      Serial.println("\nConexión exitosa");
+      Serial.println("\nConexión exitosa a la WIFI");
       return;
     }
   }
@@ -478,7 +477,7 @@ void configurarMPU()
 {
   if (WiFi.status() == WL_CONNECTED)
   {
-    Serial.println("Conexión exitosa");
+    Serial.println("Conexión exitosa con el MPU");
 
     // Obtención de la dirección MAC del ESP32
     WiFi.macAddress(mac);
@@ -488,9 +487,9 @@ void configurarMPU()
     mac[0] = 0;
     Serial.println(macStr);
 
-    Serial.println("Adafruit MPU6050 test!");
+    Serial.println("Adafruit MPU6050 test:");
     mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-    Serial.println("seleccionado rango");
+    //Serial.println("seleccionado rango");
     Serial.print("Accelerometer range set to: ");
     
     switch (mpu.getAccelerometerRange())
@@ -678,60 +677,72 @@ void leerCaraYGuardarValores()
     /*************************/
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
-    
-    //Pongo elseif para que no entre si detectó un cambio   
-    //------------EJE X-------------------//
-    // ------------EJE X ramon------------------- hay que estructurar esto con una función que englobe los rtes ejes //
-    
-    /* Debajo he puesto código optimizado, tengo que ver si funciona
-    int x = (int)a.acceleration.x;
-    int y = (int)a.acceleration.y;
-    int z = (int)a.acceleration.z;
 
-    if (abs(x) > SENSIBILIDAD_SENSOR) 
+    //------------EJE X-------------------//
+    if (abs((int)a.acceleration.x) > SENSIBILIDAD_SENSOR)
     {
       timeini = Ctimer();
-      unsigned long tiempoEspera = 3000;  // 3 segundos de espera
-      unsigned long tiempoInicio = millis();
-      unsigned long tiempoUltimaLectura = tiempoInicio;
-
-      while (millis() - tiempoInicio <= tiempoEspera) 
+      if ((int)a.acceleration.x > 0 && valor_cara != 1)
       {
-        mpu.getEvent(&a, &g, &temp);
-        int newX = (int)a.acceleration.x;
-
-        if (newX * x <= 0 || abs(newX) < SENSIBILIDAD_SENSOR) {
-          break;
+        valor_cara = 1;
+        while (1)
+        {
+          mpu.getEvent(&a, &g, &temp);
+          int x = (int)a.acceleration.x;
+          delay(1000);
+          if (x < 0 || abs(x) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
+          {
+            break;
+          }
         }
-        if (millis() - tiempoUltimaLectura >= 1000) {
-          tiempoUltimaLectura = millis();
-          // Aquí puedes realizar acciones adicionales que necesiten ejecutarse cada segundo
+        timefin = Ctimer() - timeini;
+        Serial.println(timefin);
+        if (timefin > 3)
+        {
+          timeini = 0;
+          timefin = 0;
+          actual = "Estoy muy feliz";
+          Serial.println(actual);
+          trabajoRealizado = true;
         }
       }
-
-      timefin = Ctimer() - timeini;
-
-      if (timefin > 3) 
+      else if ((int)a.acceleration.x < 0 && valor_cara != 6)
       {
-        timeini = 0;
-        timefin = 0;
-        actual = (x > 0) ? "Estoy muy feliz" : "Estoy muy mal";
-        valor_cara = (x > 0) ? 2 : 4;
-        trabajoRealizado = true;
+        valor_cara = 6;
+        while (1)
+        {
+          mpu.getEvent(&a, &g, &temp);
+          int x = (int)a.acceleration.x;
+          delay(1000);
+          if (x > 0 || abs(x) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
+          {
+            break;
+          }
+        }
+        timefin = Ctimer() - timeini;
+        Serial.println(timefin);
+        if (timefin > 3)
+        {
+          timeini = 0;
+          timefin = 0;
+          actual = "Estoy muy mal";
+          Serial.println(actual);
+          trabajoRealizado = true;
+        }
       }
     }
 
     //------------EJE Y-------------------//
-    else if (abs(y) > SENSIBILIDAD_SENSOR)
+    if (abs((int)a.acceleration.y) > SENSIBILIDAD_SENSOR)
     {
       timeini = Ctimer();
-      if (y > 0 && valor_cara != 3)
+      if ((int)a.acceleration.y > 0 && valor_cara != 4)
       {
-        valor_cara = 3;
+        valor_cara = 4;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
-          //int y = (int)a.acceleration.y;
+          int y = (int)a.acceleration.y;
           delay(1000);
           if (y < 0 || abs(y) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
@@ -739,7 +750,7 @@ void leerCaraYGuardarValores()
           }
         }
         timefin = Ctimer() - timeini;
-
+        Serial.println(timefin);
         if (timefin > 3)
         {
           timeini = 0;
@@ -749,13 +760,13 @@ void leerCaraYGuardarValores()
           trabajoRealizado = true;
         }
       }
-      else if (y < 0 && valor_cara != 1)
+      else if ((int)a.acceleration.y < 0 && valor_cara != 2)
       {
-        valor_cara = 1;
+        valor_cara = 2;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
-          //int y = (int)a.acceleration.y;
+          int y = (int)a.acceleration.y;
           delay(1000);
           if (y > 0 || abs(y) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
@@ -763,7 +774,7 @@ void leerCaraYGuardarValores()
           }
         }
         timefin = Ctimer() - timeini;
-
+        Serial.println(timefin);
         if (timefin > 3)
         {
           timeini = 0;
@@ -776,17 +787,17 @@ void leerCaraYGuardarValores()
     }
 
     //------------EJE Z-------------------//
-    else if (abs(z) > SENSIBILIDAD_SENSOR)
+    if (abs((int)a.acceleration.z) > SENSIBILIDAD_SENSOR)
     {
-      
+      Serial.println("Valor cara:" + valor_cara);
       timeini = Ctimer();
-      if (z > 0 && valor_cara != 5)
+      if ((int)a.acceleration.z > 0 && valor_cara != 5)
       {
         valor_cara = 5;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
-          //int z = (int)a.acceleration.z;
+          int z = (int)a.acceleration.z;
           delay(1000);
           if (z < 0 || abs(z) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
@@ -794,21 +805,23 @@ void leerCaraYGuardarValores()
           }
         }
         timefin = Ctimer() - timeini;
-
+        Serial.println(timefin);
         if (timefin > 3)
         {
           timeini = 0;
           timefin = 0;
+          actual = "Estoy bastante mal";
+          Serial.println(actual);
           trabajoRealizado = true;
         }
       }
-      else if (z < 0 && valor_cara != 0)
+      else if ((int)a.acceleration.z < 0 && valor_cara != 3)
       {
-        valor_cara = 0;
+        valor_cara = 3;
         while (1)
         {
           mpu.getEvent(&a, &g, &temp);
-          //int z = (int)a.acceleration.z;
+          int z = (int)a.acceleration.z;
           delay(1000);
           if (z > 0 || abs(z) < SENSIBILIDAD_SENSOR || (Ctimer() - timeini) > 3)
           {
@@ -816,70 +829,22 @@ void leerCaraYGuardarValores()
           }
         }
         timefin = Ctimer() - timeini;
-
+        Serial.println(timefin);
         if (timefin > 3)
         {
           timeini = 0;
           timefin = 0;
           actual = "Estoy ni bien ni mal";
-
+          Serial.println(actual);
           trabajoRealizado = true;
         }
       }
     }
-    */
 
-
-
-  int valores[3] = {(int)a.acceleration.x, (int)a.acceleration.y, (int)a.acceleration.z};
-  String mensajes[] = {"Estoy muy feliz", "Estoy feliz", "Estoy ni bien ni mal", "Estoy mal", "Estoy bastante mal", "Estoy muy mal"};
-  int ejes[] = {0, 1, 2, 3, 4, 5}; // Correspondencia con los valores_cara
-
-  for (int i = 0; i < 3; ++i) 
-  {
-    int valor = valores[i];
-    if (abs(valor) > SENSIBILIDAD_SENSOR) 
-    {
-      timeini = Ctimer();
-      unsigned long tiempoEspera = 3000;  // 3 segundos de espera
-      unsigned long tiempoInicio = millis();
-      unsigned long tiempoUltimaLectura = tiempoInicio;
-
-      while (millis() - tiempoInicio <= tiempoEspera) 
-      {
-        mpu.getEvent(&a, &g, &temp);
-        int nuevoValor = valores[i];
-
-        if (nuevoValor * valor <= 0 || abs(nuevoValor) < SENSIBILIDAD_SENSOR) 
-        {
-          break;
-        }
-        if (millis() - tiempoUltimaLectura >= 1000) 
-        {
-          tiempoUltimaLectura = millis();
-          // Aquí puedes realizar acciones adicionales que necesiten ejecutarse cada segundo
-        }
-      }
-
-      timefin = Ctimer() - timeini;
-
-      if (timefin > 3) 
-      {
-        timeini = 0;
-        timefin = 0;
-        actual = mensajes[ejes[i]];
-        valor_cara = ejes[i];
-        trabajoRealizado = true;
-      }
-    }
-  }
-
-  Serial.println ("Valor cara: ");
-  Serial.println (valor_cara);
-  /***********************/
 }
-    
+
 // Despertar al ESP32 según las condiciones
+
 void despertarSegunCondiciones()
 {
     // // Despertar al ESP32 cuando se conecte a la red
