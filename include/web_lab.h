@@ -3,14 +3,14 @@
 #ifndef WEBLAB_H
 #define WEBLAB_H
 
-#include <Arduino.h>
 #include "configuration.h"
 
 extern WebServer server;
+extern boolean wifiUpdate;
 
 void handleRoot();
 void handleSave();
-void handleSelect();
+void handleExit();
 void handleImage();
 void handleGif();
 

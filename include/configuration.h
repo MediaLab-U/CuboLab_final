@@ -18,10 +18,20 @@
 #include <SPI.h>
 #include "Time.h"
 
+#include <Arduino.h>
+
+#include "hmi.h"
+#include "ads.h"
+#include "imu.h"
+#include "sender_lab.h"
+#include "sleep_lab.h"
+#include "web_lab.h"
+#include "wifi_lab.h"
+
 extern Preferences preferences;
 extern int currentSide;
 
-extern boolean  modoConfig;
+extern boolean  config;
 extern boolean firstConfig;
 
 
@@ -32,7 +42,14 @@ void initMemory();
 
 void configFileSystem();
 
+void configMode();
+
 void configTime();
+
+String getTime();
+String getNextTime();
+
+void delayLab(long);
 
 
 

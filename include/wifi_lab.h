@@ -3,19 +3,22 @@
 #ifndef WIFILAB_H
 #define WIFILAB_H
 
-#include <Arduino.h>
+#include "configuration.h"
 
 extern String ssidAP;
 extern String passwordAP;
+
 extern String ssid;
 extern String password;
+
 extern char macStr[18];
+
 extern String networks;
 extern boolean networksAvailable;
 
 void getMac();
 
-void connectWiFi();
+boolean connectWiFi();
 
 void createWifi();
 

@@ -17,13 +17,15 @@ void initIMU(){
         }
     }
 
+    configIMU();
+
     Serial.println("MPU iniciado correctamente");
 }
 
 void configIMU(){
 
     mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-    Serial.print("Accelerometer range set to: ");
+    Serial.print("Rango del accelerometro: ");
     
     switch (mpu.getAccelerometerRange())
     {
@@ -42,7 +44,7 @@ void configIMU(){
     }
 
     mpu.setGyroRange(MPU6050_RANGE_2000_DEG);
-    Serial.print("Gyro range set to: ");
+    Serial.print("Rango del giroscopio: ");
     switch (mpu.getGyroRange())
     {
       case MPU6050_RANGE_250_DEG:
@@ -60,7 +62,7 @@ void configIMU(){
     }
 
     mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);
-    Serial.print("Filter bandwidth set to: ");
+    Serial.print("Filtro pasobanda de: ");
     
     switch (mpu.getFilterBandwidth())
     {
@@ -92,7 +94,7 @@ void configIMU(){
 void readIMU(){
     mpu.getEvent(&a, &g, &temp);
 
-    Serial.println("Read Data");
+    Serial.println("Lectura del IMU:");
     Serial.print("AX: ");
     Serial.print(a.acceleration.x);
     Serial.print("AY: ");

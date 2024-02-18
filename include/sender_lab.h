@@ -3,9 +3,7 @@
 #ifndef SENDERLAB_H
 #define SENDERLAB_H
 
-#include <Arduino.h>
 #include "configuration.h"
-#include "hmi.h"
 
 extern HTTPClient http;
 

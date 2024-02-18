@@ -1,7 +1,9 @@
 #include "ads.h"
 
-
 Adafruit_ADS1015 ads1015;
+
+int batteryLevel = 0;
+int batteryPorcentage = 0;
 
 void initADS(){
   if (!ads1015.begin())
@@ -10,9 +12,14 @@ void initADS(){
     }
 }
 
-int readBattery(){
-  int adc0 = ads1015.readADC_SingleEnded(0);
-  Serial.println(adc0);
-  
-  return adc0;
+float readBatteryLevel(){
+  // TO-DO
+  batteryLevel = ads1015.readADC_SingleEnded(0);
+  return 4.0;
 }
+
+int readBatteryPorcentage(){
+  batteryPorcentage = batteryLevel * 100 /4.2;
+  return batteryPorcentage;
+}
+

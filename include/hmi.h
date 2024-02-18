@@ -3,7 +3,7 @@
 #ifndef HMI_H
 #define HMI_H
 
-#include <Arduino.h>
+#include "configuration.h"
 
 #define led_g 26
 #define led_b 25
@@ -11,14 +11,33 @@
 
 #define BUZZER_PIN 18
 
-void initLeds();
+enum State {
+  NO_CONNECTION,
+  CORRECT_CONNECTION,
+  GREEN_BATTERY,
+  YELLOW_BATTERY,
+  RED_BATTERY,
+  FULL_CHARGE,
+  GREEN_CHARGE,
+  YELLOW_CHARGE,
+  RED_CHARGE,
+  NO_BATTERY,
+  WIFI_ERROR,
+  NEW_SEND,
+  ERROR,
+};
+
+void initHMI();
+
 void ledBlue();
 void ledGreen();
+void ledYellow();
 void ledRed();
-void turnOffLeds();
+void ledsOff();
 
-void initBuzz();
-void toneBuzz(int);
+void handleState(State);
+
+State readBatteryStateLab(boolean charge = false);
 
 
 #endif // IMU_H

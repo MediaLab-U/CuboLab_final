@@ -25,8 +25,12 @@ void goToSleep()
   esp_deep_sleep_start();
 }
 
-void configBatterySleep() 
+void configSleep() 
 {
+  // Activamos pines de interrupciones
+  pinMode(4, INPUT_PULLUP);
+  pinMode(14, INPUT_PULLUP);
+
   // Habilitar la retención de pines durante el modo de bajo consumo
   gpio_deep_sleep_hold_en();
   // Deshabilitar temporizador preciso RTC durante deepsleep

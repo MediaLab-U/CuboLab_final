@@ -3,10 +3,9 @@
 #ifndef SLEEPLAB_H
 #define SLEEPLAB_H
 
-#include <Arduino.h>
 #include "configuration.h"
 
 void goToSleep();
-void configBatterySleep();
+void configSleep();
 
 #endif // SLEEPLAB_H

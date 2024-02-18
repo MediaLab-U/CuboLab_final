@@ -4,7 +4,6 @@
 #define IMU_H
 
 #include "configuration.h"
-#include <Arduino.h>
 
 extern Adafruit_MPU6050 mpu;
 extern sensors_event_t a, g, temp;

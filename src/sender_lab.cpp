@@ -1,10 +1,6 @@
 #include "sender_lab.h"
-#include "ads.h"
-#include "wifi_lab.h"
 
 HTTPClient http;
-
-char macStr[18];
 
 
 void sendData(){
@@ -16,13 +12,12 @@ void sendData(){
         Serial.print(previousSide);
         Serial.print(" -> ");
         Serial.println(currentSide);
-        Serial.print("Battery: ");
+        Serial.println("Battery: ");
 
 
         //readBattery();
         sendNewData();
-
-        toneBuzz(0);
+        
 
     }
     else{
@@ -33,22 +28,26 @@ void sendData(){
 }
 
 void sendNewData(){
-    int batteryLevel = readBattery();
-
-    String httpMessage = "https://www.unioviedo.es/medialab/datos_cube.php?e=" + String(currentSide) + "&m='" + (String)macStr + "'&b=" + String(batteryLevel);
-
+    int batteryLevel = readBatteryLevel();
+    
+    http.setTimeout(10000); // Tiempo de espera en milisegundos
+    // To-Do change to new function handleState
+    handleState(NEW_SEND);
+    String httpMessage = "https://www.unioviedo.es/medialab/datos_cube.php?e=" + String(currentSide) + "&m=%27" + (String)macStr + "%27&b=" + String(batteryLevel);
+    Serial.println(httpMessage);
     http.begin(httpMessage);
     int httpCode = http.GET();
-
+    Serial.print("HTTP Code:");
+    Serial.println(httpCode);
     if (httpCode > 0){
         String payload = http.getString();
         Serial.println(payload);
-
-        toneBuzz(0);
         
     }
     else{
         Serial.println("Error en la solicitud");
     }
+    
+
         
 }

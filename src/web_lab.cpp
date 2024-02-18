@@ -1,16 +1,12 @@
 #include "web_lab.h"
-#include "wifi_lab.h"
-#include "imu.h"
-#include "ads.h"
 
 WebServer server(80);
+boolean wifiUpdate = false;
 
 void handleRoot()
 {
     // Si el escaner de redes wifi está lista devolemos el html con las wifis
     if (networksAvailable){
-        
-
         // Lee el contenido del archivo HTML
         String content;
         File file = LittleFS.open("/index.html", "r");
@@ -26,7 +22,16 @@ void handleRoot()
 
         // Concatena datos de variables de Arduino en el HTML
         content.replace("{networks}", networks);
-        content.replace("{batteryVoltage}", String(readBattery()));
+
+        if(wifiUpdate){
+          content.replace("{WifiUpdate}", "<div id='banner' style='background-color: #4caf50; color: white; padding: 10px; text-align: center;'><strong>¡Nueva WiFi guardada correctamente!</strong></div>");
+        }else{
+          content.replace("{WifiUpdate}", "");
+        }
+
+        content.replace("{MAC}", macStr);
+        content.replace("{batteryVoltage}", String(readBatteryLevel()));
+        content.replace("{batteryPorcentage}", String(readBatteryPorcentage()));
         content.replace("{side}", String(currentSide));
         content.replace("{ssid}", ssid);
         content.replace("{password}", password);
@@ -39,35 +44,72 @@ void handleRoot()
         server.sendHeader("Refresh", "10");
         server.send(200, "text/html", "<html><body><h1>Cargando...</h1><img src='/carga.gif'></body></html>");
 
-
     }    
     
 
 }
 
-void handleSelect()
-{
-  ssid = server.arg("ssid");
-  server.send(200, "text/html", "SSID seleccionado: " + ssid + "\nPor favor, ingresa la contraseña correspondiente: <form method='POST' action='/save'><input type='password' name='password'><input type='submit' value='Guardar'></form>");
 
-  Serial.println("ssid guardado");
-}
 
 void handleSave()
 {
-
+  ssid = server.arg("ssid");
   password = server.arg("password");
-  server.send(200, "text/plain", "Wifi actualizado");
-  
-  WiFi.disconnect(true);
-  
-  // Guardamos datos en memoria no voltalil de la nueva wifi
+
   preferences.putString("ssid", ssid);
   preferences.putString("pass", password);
-  
-  connectWiFi();
 
-  modoConfig = false;
+
+  ssid = preferences.getString("ssid", "MikroTik-B87EBD");
+  password = preferences.getString("pass", "medialab2019");
+  preferences.end();
+  
+
+  Serial.println(ssid.c_str());
+  Serial.println(password.c_str());
+
+  Serial.println("wifiUpdate");
+  Serial.println(wifiUpdate);
+  wifiUpdate = true;
+  Serial.println(wifiUpdate);
+
+  handleRoot();
+  
+
+}
+
+void handleExit()
+{
+  // Lee el contenido del archivo HTML
+  String content;
+  File file = LittleFS.open("/out.html", "r");
+  if (file) {
+      while (file.available()) {
+          content += file.readStringUntil('\n');
+      }
+      file.close();
+  } else {
+      Serial.println("No se pudo abrir el archivo out.html");
+      return;
+  }
+
+
+  server.send(200, "text/html", content);
+  long timeExit = millis();
+  while((millis()-timeExit)<=(5000)){
+
+  }
+
+  WiFi.disconnect(true);
+
+  if(!connectWiFi()){
+    State state = CORRECT_CONNECTION;
+    handleState(state);
+
+    goToSleep();
+  }
+
+  config = false;
   firstConfig = true;
 
   mpu.setMotionInterrupt(true);

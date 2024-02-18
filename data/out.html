@@ -91,30 +91,9 @@
 <body>
     <div class="container">
         <img src='/image' width='200' style="display: block; margin: 0 auto;"> <!-- Centrar la imagen -->
-        <h1>Seleccionar Red WiFi</h1>
-        <form action="/save" method="post">
-            <select name="ssid" id="net" class="wifi-list">
-                {networks}
-            </select>
-            <br>
-            <input class="pass" type="password" name="password" placeholder="Introducir contraseña WiFi">
-            <br>
-            <button type="submit">Guardar WiFi</button>
-        </form>    
+        <h1>Saliendo del modo configuración</h1>
+        
     </div>
-    <!-- Contenedor para los datos adicionales -->
-    <div class="container">
-      <h2>Datos:</h2>
-      <p>Dipositivo Mac: {MAC}</p>
-      <p>Voltaje de batería: {batteryVoltage}V</p>
-      <p>Porcentaje de Carga: {batteryPorcentage}%</p>
-      <p>Cara leída: {side}</p>
-      <p>Nombre WiFi: {ssid}</p>
-      <p>Contraseña WiFi: {password}</p>
-      <form action="/exit" method="post">
-        <button type="submit">Salir del Modo Configuración</button>
-      </form>
-      
-    </div>
+    
 </body>
 </html>
