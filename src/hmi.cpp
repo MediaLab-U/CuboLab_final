@@ -49,7 +49,7 @@ void handleState(State state) {
       Serial.println("NO_CONNECTION");
       for(int i = 0; i<5; i++){
         ledRed();
-        tone(BUZZER_PIN, 1000, 500); // Genera un tono de 1000 Hz durante 500 ms
+        tone(BUZZER_PIN, 1000, 500);
         delayLab(500);
         ledsOff();
         delayLab(500);
@@ -83,7 +83,7 @@ void handleState(State state) {
       for(int i = 0; i++; i<5){
         for(int j = 0; i++; i<2){
         ledRed();
-        tone(BUZZER_PIN, 1000, 500); // Genera un tono de 1000 Hz durante 500 ms
+        tone(BUZZER_PIN, 1000, 500);
         ledsOff();
         delayLab(500);
         }
@@ -102,7 +102,6 @@ void handleState(State state) {
         delayLab(10);
       }
 
-      // Apagar gradualmente el LED
       for (int brillo = 255; brillo >= 0; brillo--) {
         analogWrite(led_g, brillo);
         delayLab(10);
@@ -116,7 +115,6 @@ void handleState(State state) {
         delayLab(10);
       }
 
-      // Apagar gradualmente el LED
       for (int brillo = 255; brillo >= 0; brillo--) {
         analogWrite(led_g, brillo);
         analogWrite(led_r, brillo);
@@ -130,17 +128,12 @@ void handleState(State state) {
         delayLab(10);
       }
 
-      // Apagar gradualmente el LED
       for (int brillo = 255; brillo >= 0; brillo--) {
         analogWrite(led_r, brillo);
         delayLab(10);
       }
       break;
-
-    case WIFI_ERROR:
-      // Luz roja parpadeando 5 veces
-      // 1 pitido
-      break;
+      
     case NEW_SEND:
       ledBlue();
       tone(BUZZER_PIN, 1000, 500);

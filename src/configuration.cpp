@@ -1,5 +1,5 @@
 #include "configuration.h"
-boolean config = false;
+boolean config = true;
 boolean firstConfig = true;
 Preferences preferences;
 

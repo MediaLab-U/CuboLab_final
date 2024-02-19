@@ -22,7 +22,6 @@ enum State {
   YELLOW_CHARGE,
   RED_CHARGE,
   NO_BATTERY,
-  WIFI_ERROR,
   NEW_SEND,
   ERROR,
 };
