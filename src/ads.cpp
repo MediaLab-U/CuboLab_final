@@ -15,11 +15,21 @@ void initADS(){
 float readBatteryLevel(){
   // TO-DO
   batteryLevel = ads1015.readADC_SingleEnded(0);
-  return 4.0;
+  return batteryLevel * 5 / 536;
 }
 
 int readBatteryPorcentage(){
-  batteryPorcentage = batteryLevel * 100 /4.2;
+
+  if (batteryLevel < 2.1){
+    batteryPorcentage = 0;
+  }
+  else if (batteryLevel > 2.6){
+    batteryPorcentage = 100;
+  }
+  else{
+    batteryPorcentage = ((batteryLevel - 2.1) / (2.6 - 2.1)) * 100;
+  }
+  
   return batteryPorcentage;
 }
 

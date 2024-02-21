@@ -1,5 +1,5 @@
 #include "configuration.h"
-boolean config = true;
+CubeState cubeState = NORMAL_MODE;
 boolean firstConfig = true;
 Preferences preferences;
 

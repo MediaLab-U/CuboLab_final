@@ -29,6 +29,7 @@ void handleRoot()
           content.replace("{WifiUpdate}", "");
         }
 
+        
         content.replace("{MAC}", macStr);
         content.replace("{batteryVoltage}", String(readBatteryLevel()));
         content.replace("{batteryPorcentage}", String(readBatteryPorcentage()));
@@ -102,6 +103,10 @@ void handleExit()
 
   WiFi.disconnect(true);
 
+  mpu.setMotionInterrupt(true);
+  mpu.setMotionDetectionThreshold(5.0f); // deteccion de un cambio de gravedad en un incremento de 5m/s^2
+  mpu.setMotionDetectionDuration(2);
+
   if(!connectWiFi()){
     State state = CORRECT_CONNECTION;
     handleState(state);
@@ -109,12 +114,8 @@ void handleExit()
     goToSleep();
   }
 
-  config = false;
+  cubeState = NORMAL_MODE;
   firstConfig = true;
-
-  mpu.setMotionInterrupt(true);
-  mpu.setMotionDetectionThreshold(5.0f); // deteccion de un cambio de gravedad en un incremento de 5m/s^2
-  mpu.setMotionDetectionDuration(2);
 
 
 }

@@ -24,6 +24,7 @@ enum State {
   NO_BATTERY,
   NEW_SEND,
   ERROR,
+  CONFIG,
 };
 
 void initHMI();
@@ -31,6 +32,7 @@ void initHMI();
 void ledBlue();
 void ledGreen();
 void ledYellow();
+void ledPurple();
 void ledRed();
 void ledsOff();
 

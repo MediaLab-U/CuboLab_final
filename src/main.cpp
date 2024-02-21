@@ -4,8 +4,9 @@
 #define pin_tension 4
 
 long t1;
+  
 
-
+State state;
 
 void setup()
 {
@@ -21,8 +22,9 @@ void setup()
   initADS();
 
   Serial.println("Comprobamos nivel de bateria");
-  // State state = readBatteryStateLab();                        // Leemos estado batería en carga
-  handleState(GREEN_BATTERY);                                      
+  // To-Do
+  state = readBatteryStateLab();                        // Leemos estado batería en carga
+  handleState(state);                                      
   
   Serial.println("Iniciando IMU");                            // Inicialización y configuración del IMU
   initIMU();
@@ -35,11 +37,12 @@ void setup()
   
   Serial.println("Configurando Gestor Archivos Servidor");    // Inizialización de archivos para servidor (solo se usa en modo config)
   configFileSystem();
-    
+
   Serial.println("Conectando WiFi");                          // Conexión a la WiFi guardada.
   if(!connectWiFi()){                                         // Si no nos conectamos a la WiFi activamos modo configuración
     // TO-DO mostrar error 
-    config = true;
+    // handleState(NO_CONNECTION);
+    cubeState = CHARGE;
     mpu.setMotionInterrupt(false);
   }
   
@@ -63,64 +66,79 @@ void setup()
 
 void loop()
 {
-  
 
-  // Comprobamos si el cargador esta conectado, si lo está activamos modo configuración
-  /*
-  if (digitalRead(pin_tension)){
-      modoConfig = true;
-
-      if 
-  }*/
-
-  if (config)                                                        
-  { 
-    if (firstConfig){                                                 // La primera vez configuramos el punto AP
-      
-      Serial.println("Primera configuración");
-      
-      // t1 = millis();
-      
-      configMode();
-      
-      Serial.println("Termina primera configuracion");
-      firstConfig = false;
-    }
+  // Ejecutamos máquina de estados
+  switch (cubeState) {
     
-    server.handleClient();                                            // Respondemos peticiones servidor web configuración
+    case WIFI_CONFIG: 
+        if (firstConfig){                                                 // La primera vez configuramos el punto AP
+          
+          Serial.println("Primera configuración");
+          
+          t1 = millis();
+          
+          configMode();
+          
+          Serial.println("Termina primera configuracion");
+          firstConfig = false;
+        }
+        
+        server.handleClient();                                            // Respondemos peticiones servidor web configuración
 
-    // State state = readBatteryStateLab(true);                          // Leemos estado batería en carga
-    
-    handleState(GREEN_CHARGE);                                        // Mostramos por hmi la carga
+        state = readBatteryStateLab(true);                          // Leemos estado batería en carga
+        Serial.println(state);
+        
+        handleState(GREEN_CHARGE);                                        // Mostramos por hmi la carga
 
-    // Comprobamos si el cargador esta conectado
-    /*
-    if (!digitalRead(pin_tension)){
-      modoConfig = false;
-      firstConfig = true;
-    }*/
+        // Comprobamos si el cargador esta conectado
+        
+        if (!digitalRead(pin_tension)){
+          // To-Do
+          // Se sale al modo normal
+        }
 
-    /*if ((millis()-t1)>=(2*60*1000)){
-      Serial.println("Se sale del modo configuración por timeout")
-        modoConfig = false;
-        firstConfig = true;
-    }*/
+        if ((millis()-t1)>=(2*60*1000)){
+          Serial.println("Se sale del modo configuración wifi por timeout");
 
+          WiFi.disconnect(true);
+          cubeState = CHARGE;
+        }
 
-  }
+        break;
+      
+    case CHARGE:
+      state = readBatteryStateLab(true);                          // Leemos estado batería en carga  
+      Serial.println(state);
+      handleState(state);                                        // Mostramos por hmi la carga
 
-  // Modo funcionamiento NORMAL
-  if (WiFi.status() == WL_CONNECTED && !config)
-  {
-    Serial.println("Funcionando en modo normal");
+      if (!digitalRead(pin_tension)){
+          cubeState = NORMAL_MODE;
+          Serial.println("Salimos de modo charge");
+          state = readBatteryStateLab();                        // Leemos estado batería en carga
+          Serial.println(state);
+          handleState(state); 
+        }
+      break;
 
-    readIMU();
+    case NORMAL_MODE:
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        Serial.println("Funcionando en modo normal");
 
-    calculateSide();
+        readIMU();
 
-    sendData();
-    
-    goToSleep();
+        calculateSide();
+
+        sendData();
+        
+
+      }
+      goToSleep();
+      break;
+
+    default: 
+      cubeState = NORMAL_MODE;
+      break;
 
   }
 

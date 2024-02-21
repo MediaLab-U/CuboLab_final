@@ -51,8 +51,6 @@ boolean connectWiFi() {
   if (attempts  >= 9) {
     // ToDo: Realiza alguna acción si no se puede conectar después de 10 intentos
     Serial.println("No se pudo conectar a la red WiFi después de 10 intentos.");
-    
-    handleState(NO_CONNECTION);
     return false;
   }
 

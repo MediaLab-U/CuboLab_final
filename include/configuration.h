@@ -31,12 +31,20 @@
 extern Preferences preferences;
 extern int currentSide;
 
-extern boolean  config;
 extern boolean firstConfig;
+
 
 
 #define SDA_PIN 21
 #define SCL_PIN 22
+
+enum CubeState {
+    WIFI_CONFIG,
+    CHARGE,
+    NORMAL_MODE,
+};
+
+extern CubeState cubeState;
 
 void initMemory();
 

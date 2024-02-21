@@ -3,42 +3,47 @@
 
 void initHMI() 
 {
+  pinMode(led_r, OUTPUT);
   pinMode(led_g, OUTPUT);
   pinMode(led_b, OUTPUT);
-  pinMode(led_r, OUTPUT);
   ledsOff();
   pinMode(BUZZER_PIN, OUTPUT);
 }
 
 void ledBlue() {
-  digitalWrite(led_b, LOW);
-  digitalWrite(led_g, HIGH);
   digitalWrite(led_r, HIGH);
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_b, LOW);
 }
 
 void ledGreen() {
-  digitalWrite(led_b, HIGH);
-  digitalWrite(led_g, LOW);
   digitalWrite(led_r, HIGH);
+  digitalWrite(led_g, LOW);
+  digitalWrite(led_b, HIGH);
 }
 
 void ledRed() {
-  digitalWrite(led_b, HIGH);
-  digitalWrite(led_g, HIGH);
   digitalWrite(led_r, LOW);
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_b, HIGH);
 }
 
 void ledYellow(){
+  digitalWrite(led_r, HIGH);
+  digitalWrite(led_g, HIGH);
   digitalWrite(led_b, LOW);
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_g, HIGH);
 }
 
+void ledPurple(){
+  digitalWrite(led_r, LOW);
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_b, LOW);
+}
 
 void ledsOff() {
-  digitalWrite(led_b, HIGH);
-  digitalWrite(led_g, HIGH);
   digitalWrite(led_r, HIGH);
+  digitalWrite(led_g, HIGH);
+  digitalWrite(led_b, HIGH);
 }
 
 
@@ -46,7 +51,7 @@ void ledsOff() {
 void handleState(State state) {
   switch (state) {
     case NO_CONNECTION:
-      Serial.println("NO_CONNECTION");
+      ledsOff();
       for(int i = 0; i<5; i++){
         ledRed();
         tone(BUZZER_PIN, 1000, 500);
@@ -57,29 +62,33 @@ void handleState(State state) {
       break;
 
     case CORRECT_CONNECTION:
-      Serial.println("CORRECT_CONNECTION");
       ledsOff();
       break;
 
     case GREEN_BATTERY:
+      ledsOff();
       ledGreen();
       delayLab(500);
       ledsOff();
       break;
 
     case YELLOW_BATTERY:
+      ledsOff();
       ledYellow();
       delayLab(500);
       ledsOff();
       break;
 
     case RED_BATTERY:
+      ledsOff();
       ledRed();
       delayLab(500);
       ledsOff();
       break;
     
     case NO_BATTERY:
+      ledsOff();
+      Serial.println("NO_BATTERY");
       for(int i = 0; i++; i<5){
         for(int j = 0; i++; i<2){
         ledRed();
@@ -93,10 +102,12 @@ void handleState(State state) {
       break;
 
     case FULL_CHARGE:
+      ledsOff();
       ledGreen();
       break;
 
     case GREEN_CHARGE:
+      ledsOff();
       for (int brillo = 0; brillo <= 255; brillo++) {
         analogWrite(led_g, brillo);
         delayLab(10);
@@ -106,9 +117,11 @@ void handleState(State state) {
         analogWrite(led_g, brillo);
         delayLab(10);
       }
+      ledsOff();
       break;
 
     case YELLOW_CHARGE:
+      ledsOff();
       for (int brillo = 0; brillo <= 255; brillo++) {
         analogWrite(led_g, brillo);
         analogWrite(led_r, brillo);
@@ -120,9 +133,11 @@ void handleState(State state) {
         analogWrite(led_r, brillo);
         delayLab(10);
       }
+      ledsOff();
       break;
 
     case RED_CHARGE:
+      ledsOff();
       for (int brillo = 0; brillo <= 255; brillo++) {
         analogWrite(led_r, brillo);
         delayLab(10);
@@ -132,6 +147,7 @@ void handleState(State state) {
         analogWrite(led_r, brillo);
         delayLab(10);
       }
+      ledsOff();
       break;
       
     case NEW_SEND:
@@ -140,6 +156,11 @@ void handleState(State state) {
       ledsOff();
       // 1 pitido
       break;
+
+    case CONFIG:
+      ledPurple();
+      delayLab(10000);
+      ledsOff();
     default:
       // Estado desconocido
       break;
