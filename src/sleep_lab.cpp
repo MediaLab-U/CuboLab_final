@@ -6,6 +6,10 @@ void goToSleep()
   Serial.println("CuboSleep");
 
 
+  mpu.setMotionInterrupt(true);
+  mpu.setMotionDetectionThreshold(3.0f);                 
+  mpu.setMotionDetectionDuration(1);
+
   // Despertar al ESP32 cuando se conecte a la red
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
 
@@ -14,6 +18,7 @@ void goToSleep()
 
 
   // Apagar el ESP32 cuando no tenga suficiente batería
+  // To-Do
   /*if (adc0 <= 0 && digitalRead(GPIO_NUM_4) != 1)
   {
     esp_deep_sleep_start();

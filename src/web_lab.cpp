@@ -33,7 +33,6 @@ void handleRoot()
         content.replace("{MAC}", macStr);
         content.replace("{batteryVoltage}", String(readBatteryLevel()));
         content.replace("{batteryPorcentage}", String(readBatteryPorcentage()));
-        content.replace("{side}", String(currentSide));
         content.replace("{ssid}", ssid);
         content.replace("{password}", password);
 
@@ -103,9 +102,6 @@ void handleExit()
 
   WiFi.disconnect(true);
 
-  mpu.setMotionInterrupt(true);
-  mpu.setMotionDetectionThreshold(5.0f); // deteccion de un cambio de gravedad en un incremento de 5m/s^2
-  mpu.setMotionDetectionDuration(2);
 
   if(!connectWiFi()){
     State state = CORRECT_CONNECTION;

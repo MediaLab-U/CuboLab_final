@@ -25,6 +25,7 @@ enum State {
   NEW_SEND,
   ERROR,
   CONFIG,
+  REMEMBER,
 };
 
 void initHMI();

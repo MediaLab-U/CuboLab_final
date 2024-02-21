@@ -2,10 +2,13 @@
 CubeState cubeState = NORMAL_MODE;
 boolean firstConfig = true;
 Preferences preferences;
+String cubeTime;
 
 
 void initMemory() {
   preferences.begin("MediaLab", false);
+  ssid = preferences.getString("ssid", "MikroTik-B87EBD");
+  password = preferences.getString("pass", "medialab2019");
 }
 
 void configFileSystem() {
@@ -16,6 +19,7 @@ void configFileSystem() {
 
 void configMode()
 {
+    getMac();
 
     Serial.println("WiFi desconectado");
     WiFi.disconnect(true);
@@ -56,42 +60,31 @@ void configTime(){
 
 }
 
-String getTime() {
+boolean getTime() {
   struct tm timeinfo;
 
   if (!getLocalTime(&timeinfo)) {
     Serial.println("Failed to obtain time");
-    return "Error obteniendo la hora";
+    return false;
   }
 
   char formatTime[6]; // hh:mm\0
   strftime(formatTime, sizeof(formatTime), "%H:%M", &timeinfo);
 
-  return String(formatTime);
+  cubeTime = String(formatTime);
+  return true;
 }
 
-String getNextTime(){
-  struct tm timeinfo;
+boolean isDay(){
 
-  if (!getLocalTime(&timeinfo)) {
-    Serial.println("Failed to obtain time");
-    return "Error obteniendo la hora";
-  }
-
-  // Obtener la hora actual
-  int horaActual = timeinfo.tm_hour;
-
-  // Si la hora actual es par, calcular tiempo hasta la siguiente hora par
-  if (horaActual % 2 == 0) {
-    int minutosRestantes = 60 - timeinfo.tm_min;
-    return String(minutosRestantes) + " minutos hasta la siguiente hora par";
-  }
-
-  // Si la hora actual es impar, calcular tiempo hasta la siguiente hora par
-  int horasRestantes = (horaActual % 2 == 1) ? 1 : 0; // Si es 23:xx, restar 1 hora, sino 0
-  int minutosRestantes = (60 - timeinfo.tm_min) + (horasRestantes * 60);
-  return String(minutosRestantes) + " minutos hasta la siguiente hora par";
+  int h = cubeTime.substring(0, 2).toInt();
   
+  // Comprobar si la hora está entre las 8:00 y las 22:00
+  if (h >= 8 && h <= 21) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void delayLab(long wait){

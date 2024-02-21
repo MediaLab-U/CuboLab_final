@@ -32,6 +32,7 @@ extern Preferences preferences;
 extern int currentSide;
 
 extern boolean firstConfig;
+extern String cubeTime;
 
 
 
@@ -54,8 +55,15 @@ void configMode();
 
 void configTime();
 
-String getTime();
+boolean getTime();
+
 String getNextTime();
+
+unsigned long timeToSeconds();
+
+unsigned long timeDifference(String, String);
+
+boolean isDay();
 
 void delayLab(long);
 

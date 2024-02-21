@@ -10,6 +10,9 @@ State state;
 
 void setup()
 {
+
+  /*------------------------------------------------------------ CONFIGURACIÓN INICIAL ------------------------------------------------------------*/
+
   Serial.begin(115200);
  
   Serial.println("");
@@ -22,8 +25,8 @@ void setup()
   initADS();
 
   Serial.println("Comprobamos nivel de bateria");
-  // To-Do
-  state = readBatteryStateLab();                        // Leemos estado batería en carga
+  state = readBatteryStateLab(false);                         // Leemos estado batería en carga
+  Serial.println(state);
   handleState(state);                                      
   
   Serial.println("Iniciando IMU");                            // Inicialización y configuración del IMU
@@ -38,27 +41,57 @@ void setup()
   Serial.println("Configurando Gestor Archivos Servidor");    // Inizialización de archivos para servidor (solo se usa en modo config)
   configFileSystem();
 
-  Serial.println("Conectando WiFi");                          // Conexión a la WiFi guardada.
-  if(!connectWiFi()){                                         // Si no nos conectamos a la WiFi activamos modo configuración
-    // TO-DO mostrar error 
-    // handleState(NO_CONNECTION);
-    cubeState = CHARGE;
-    mpu.setMotionInterrupt(false);
-  }
+
   
-  else{                                                       // Si se conecta ...                         
-    Serial.println("Obtenemos hora");                       
-    configTime();
+  /*--------------------------------------------------------------- POR QUÉ DESPIERTO --------------------------------------------------------------*/
 
-    // TO-DO
-    // Serial.println("Activamos Buzzer recordatorio");
-    // activarBuzzer();
+  esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
 
-    // Activamos configuraciones de interrupción del IMU
-    mpu.setMotionInterrupt(true);
-    mpu.setMotionDetectionThreshold(3.0f);                  // deteccion de un cambio de gravedad en un incremento de 5m/s^2
-    mpu.setMotionDetectionDuration(1);
+  switch(wakeup_reason) {
+
+    case ESP_SLEEP_WAKEUP_EXT0:
+      // CARGA
+      if (digitalRead(GPIO_NUM_4) == HIGH) {
+        Serial.println("El dispositivo se ha enchufado");
+        cubeState = WIFI_CONFIG;
+      } 
+      // MOVIMIENTO
+      else {
+        Serial.println("El dispositivo ha detectado un movimiento");
+        cubeState = NORMAL_MODE;
+      }
+      break;
+
+    case ESP_SLEEP_WAKEUP_TIMER:
+      // TIMER
+      Serial.println("Temporizador de recordatorio");
+
+      Serial.println("Conectando WiFi");         
+      if(!connectWiFi()){                                        
+        // TO-DO mostrar error 
+        goToSleep();
+      }
+      else{
+        configTime();                                                               // Configuramos hora
+
+        if(getTime()){
+
+          // ¿Es de día? 
+          if (isDay()){
+            handleState(REMEMBER);  
+
+          }
+          goToSleep();
+          
+        } 
+      }
+      break;
+
+    default:
+      break;
   }
+
+  
   
   Serial.println ("Fin de la Configuración Inicial");
 
@@ -67,10 +100,14 @@ void setup()
 void loop()
 {
 
-  // Ejecutamos máquina de estados
   switch (cubeState) {
     
     case WIFI_CONFIG: 
+        state = readBatteryStateLab(true);                                // Leemos estado batería en carga
+        
+        handleState(GREEN_CHARGE);                                               // Mostramos por hmi la carga
+
+
         if (firstConfig){                                                 // La primera vez configuramos el punto AP
           
           Serial.println("Primera configuración");
@@ -85,18 +122,6 @@ void loop()
         
         server.handleClient();                                            // Respondemos peticiones servidor web configuración
 
-        state = readBatteryStateLab(true);                          // Leemos estado batería en carga
-        Serial.println(state);
-        
-        handleState(GREEN_CHARGE);                                        // Mostramos por hmi la carga
-
-        // Comprobamos si el cargador esta conectado
-        
-        if (!digitalRead(pin_tension)){
-          // To-Do
-          // Se sale al modo normal
-        }
-
         if ((millis()-t1)>=(2*60*1000)){
           Serial.println("Se sale del modo configuración wifi por timeout");
 
@@ -108,31 +133,32 @@ void loop()
       
     case CHARGE:
       state = readBatteryStateLab(true);                          // Leemos estado batería en carga  
-      Serial.println(state);
+
       handleState(state);                                        // Mostramos por hmi la carga
 
       if (!digitalRead(pin_tension)){
-          cubeState = NORMAL_MODE;
           Serial.println("Salimos de modo charge");
-          state = readBatteryStateLab();                        // Leemos estado batería en carga
-          Serial.println(state);
-          handleState(state); 
+          goToSleep();
         }
       break;
 
     case NORMAL_MODE:
-      if (WiFi.status() == WL_CONNECTED)
-      {
-        Serial.println("Funcionando en modo normal");
 
-        readIMU();
+      // Activamos configuraciones de interrupción del IMU
+      readIMU();
+      calculateSide();
 
-        calculateSide();
-
-        sendData();
-        
-
+      if (!sameSide()){
+        if(!connectWiFi()){    
+          handleState(NO_CONNECTION);                              
+          goToSleep();
+        }
+        if (WiFi.status() == WL_CONNECTED){
+          sendData(); 
+        }
       }
+
+      // To-Do
       goToSleep();
       break;
 

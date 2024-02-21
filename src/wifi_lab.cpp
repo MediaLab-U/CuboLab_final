@@ -19,8 +19,7 @@ void getMac(){
 }
 
 boolean connectWiFi() {
-  // Obtenemos mac dispositivo
-  getMac();
+
   
   // Conexión a la red WiFi
   ssid = preferences.getString("ssid", "MikroTik-B87EBD");

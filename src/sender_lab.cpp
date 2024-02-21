@@ -3,9 +3,11 @@
 HTTPClient http;
 
 
-void sendData(){
+boolean sameSide(){
     Serial.println("Send Data");
+
     int previousSide = preferences.getInt("PreviousSide", 0);
+    preferences.putInt("PreviousSide", currentSide);
 
     if (previousSide != currentSide){
         Serial.println("Diferentes caras");
@@ -14,20 +16,19 @@ void sendData(){
         Serial.println(currentSide);
         Serial.println("Battery: ");
 
-
-        //readBattery();
-        sendNewData();
+        return false;
         
 
     }
     else{
         Serial.println("Misma cara");
+        
+        return true;
     }
 
-    preferences.putInt("PreviousSide", currentSide);
 }
 
-void sendNewData(){
+void sendData(){
     int batteryLevel = readBatteryLevel();
     
     http.setTimeout(10000); // Tiempo de espera en milisegundos

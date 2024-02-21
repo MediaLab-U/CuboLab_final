@@ -29,13 +29,15 @@ void ledRed() {
 }
 
 void ledYellow(){
-  digitalWrite(led_r, HIGH);
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_b, LOW);
+  ledsOff();
+  analogWrite(led_r, 150);
+  analogWrite(led_g, LOW);
+  digitalWrite(led_b, HIGH);
 }
 
 void ledPurple(){
-  digitalWrite(led_r, LOW);
+  ledsOff();
+  analogWrite(led_r, 150);
   digitalWrite(led_g, HIGH);
   digitalWrite(led_b, LOW);
 }
@@ -89,15 +91,17 @@ void handleState(State state) {
     case NO_BATTERY:
       ledsOff();
       Serial.println("NO_BATTERY");
-      for(int i = 0; i++; i<5){
-        for(int j = 0; i++; i<2){
+      for(int i = 0;  i<1; i++){
+        for(int j = 0;  j<2; j++){
+        
         ledRed();
-        tone(BUZZER_PIN, 1000, 500);
+        tone(BUZZER_PIN, 1000, 200);
+        delay(200);
         ledsOff();
-        delayLab(500);
+        delay(200);
         }
         
-        delayLab(2000);
+        delay(2000);
       }
       break;
 
@@ -161,6 +165,17 @@ void handleState(State state) {
       ledPurple();
       delayLab(10000);
       ledsOff();
+      break;
+    
+    case REMEMBER:
+      for(int i = 0; i <5; i++){
+        tone(BUZZER_PIN, 1000, 500);
+        delayLab(500);
+        tone(BUZZER_PIN, 1000, 500);
+        delayLab(2000);
+      }
+      break;
+
     default:
       // Estado desconocido
       break;

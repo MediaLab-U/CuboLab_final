@@ -7,8 +7,8 @@
 
 extern HTTPClient http;
 
+boolean sameSide();
 void sendData();
-void sendNewData();
 void manejarTrabajoRealizado();
 
 
