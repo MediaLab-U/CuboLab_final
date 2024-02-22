@@ -43,9 +43,6 @@ void ledPurple(){
 }
 
 void ledsOff() {
-  analogWrite(led_r,255);
-  analogWrite(led_g,255);
-  analogWrite(led_b,255);
   digitalWrite(led_r, HIGH);
   digitalWrite(led_g, HIGH);
   digitalWrite(led_b, HIGH);

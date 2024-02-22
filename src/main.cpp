@@ -21,7 +21,7 @@ void setup()
   Serial.println("Configurando Human Interface");             // Configurar Leds y Buzzer
   initHMI();
 
-  
+  /*
   ledGreen();
   delay(1000);
   ledsOff();
@@ -40,7 +40,7 @@ void setup()
   delay(1000);
   ledPurple();
   delay(1000);
-  ledsOff();
+  ledsOff();*/
   
   
 
