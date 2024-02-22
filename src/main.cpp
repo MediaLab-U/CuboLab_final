@@ -21,6 +21,29 @@ void setup()
   Serial.println("Configurando Human Interface");             // Configurar Leds y Buzzer
   initHMI();
 
+  
+  ledGreen();
+  delay(1000);
+  ledsOff();
+  delay(1000);
+  ledBlue();
+  delay(1000);
+  ledsOff();
+  delay(1000);
+  ledYellow();
+  delay(1000);
+  ledsOff();
+  delay(1000);
+  ledRed();
+  delay(1000);
+  ledsOff();
+  delay(1000);
+  ledPurple();
+  delay(1000);
+  ledsOff();
+  
+  
+
   Serial.println("Configurando ADS");                         // Configurar ADC para lectura de batería
   initADS();
 

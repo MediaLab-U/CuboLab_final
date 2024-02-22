@@ -110,7 +110,7 @@ void handleExit()
     goToSleep();
   }
 
-  cubeState = NORMAL_MODE;
+  cubeState = CHARGE;
   firstConfig = true;
 
 

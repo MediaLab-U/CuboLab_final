@@ -31,7 +31,7 @@ void ledRed() {
 void ledYellow(){
   ledsOff();
   analogWrite(led_r, 150);
-  analogWrite(led_g, LOW);
+  digitalWrite(led_g, LOW);
   digitalWrite(led_b, HIGH);
 }
 
@@ -43,6 +43,9 @@ void ledPurple(){
 }
 
 void ledsOff() {
+  analogWrite(led_r,255);
+  analogWrite(led_g,255);
+  analogWrite(led_b,255);
   digitalWrite(led_r, HIGH);
   digitalWrite(led_g, HIGH);
   digitalWrite(led_b, HIGH);
@@ -52,7 +55,7 @@ void ledsOff() {
 
 void handleState(State state) {
   switch (state) {
-    case NO_CONNECTION:
+    case NO_CONNECTION:                           // To-Do que no sea tan sonido a muerte
       ledsOff();
       for(int i = 0; i<5; i++){
         ledRed();

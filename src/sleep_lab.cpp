@@ -7,7 +7,7 @@ void goToSleep()
 
 
   mpu.setMotionInterrupt(true);
-  mpu.setMotionDetectionThreshold(3.0f);                 
+  mpu.setMotionDetectionThreshold(3.0f);                // To-Do Sensibilidad del cubo               
   mpu.setMotionDetectionDuration(1);
 
   // Despertar al ESP32 cuando se conecte a la red
