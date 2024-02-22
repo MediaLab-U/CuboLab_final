@@ -14,22 +14,28 @@ void initADS(){
 
 float readBatteryLevel(){
   // TO-DO
-  batteryLevel = ads1015.readADC_SingleEnded(0);
-  return batteryLevel * 5 / 536;
+  float Vmax = 8.4;
+  float Vmin = 6.2;
+  float ADC_max = 880;
+  float ADC_min = 660;
+  batteryLevel = (((ads1015.readADC_SingleEnded(0)-ADC_min)*(Vmax-Vmin))/(ADC_max-ADC_min))+Vmin;
+  return batteryLevel;
 }
 
 int readBatteryPorcentage(){
-
-  if (batteryLevel < 2.1){
-    batteryPorcentage = 0;
+  float limitsup = 880;
+  float limitinf = 660;
+  float limitetotal = (limitsup-limitinf);
+  float lecturacortada = ((ads1015.readADC_SingleEnded(0)-limitinf));
+  int batteryPorcentage = ((lecturacortada/limitetotal)*100);
+  Serial.println(batteryPorcentage);
+  if (batteryPorcentage <0) {
+    batteryPorcentage=0;
   }
-  else if (batteryLevel > 2.6){
-    batteryPorcentage = 100;
+  if (batteryPorcentage>100){
+    batteryPorcentage=100;
   }
-  else{
-    batteryPorcentage = ((batteryLevel - 2.1) / (2.6 - 2.1)) * 100;
-  }
-  
   return batteryPorcentage;
+
 }
 

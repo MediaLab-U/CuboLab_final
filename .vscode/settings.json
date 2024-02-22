@@ -8,5 +8,6 @@
         "vector": "cpp",
         "string_view": "cpp",
         "initializer_list": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/david/OneDrive/Documentos/PlatformIO/Projects/Cubolab_GITHUB/CuboLab/.pio/libdeps/nodemcu-32s/Adafruit BusIO"
 }

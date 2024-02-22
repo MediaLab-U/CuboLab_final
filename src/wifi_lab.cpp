@@ -20,7 +20,8 @@ void getMac(){
 
 boolean connectWiFi() {
 
-  
+  getMac();
+  Serial.println(macStr);
   // Conexión a la red WiFi
   ssid = preferences.getString("ssid", "MikroTik-B87EBD");
   password = preferences.getString("pass", "medialab2019");

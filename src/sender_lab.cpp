@@ -29,7 +29,7 @@ boolean sameSide(){
 }
 
 void sendData(){
-    int batteryLevel = readBatteryLevel();
+    int batteryLevel = readBatteryPorcentage();
     
     http.setTimeout(10000); // Tiempo de espera en milisegundos
     // To-Do change to new function handleState
