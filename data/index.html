@@ -102,7 +102,28 @@
             <button type="submit">Guardar WiFi</button>
         </form>    
     </div>
-    <!-- Contenedor para los datos adicionales -->
+    <div class="container">
+        <form action="/test" method="post">
+            <label for="state">Selecciona un estado:</label>
+            <select id="state" name="state">
+              <option value="0">Sin conexión</option>
+              <option value="1">Conexión correcta</option>
+              <option value="2">Batería verde</option>
+              <option value="3">Batería amarilla</option>
+              <option value="4">Batería roja</option>
+              <option value="5">Carga completa</option>
+              <option value="6">Carga verde</option>
+              <option value="7">Carga amarilla</option>
+              <option value="8">Carga roja</option>
+              <option value="9">Sin batería</option>
+              <option value="10">Nuevo envío</option>
+              <option value="11">Configuración</option>
+              <option value="12">Recordar</option>
+              <option value="13">Mario</option>
+            </select>
+            <button type="submit">Test</button>
+          </form>
+    </div>
     <div class="container">
       <h2>Datos:</h2>
       <p>Dipositivo Mac: {MAC}</p>

@@ -34,6 +34,7 @@ extern int currentSide;
 extern boolean firstConfig;
 extern String cubeTime;
 
+extern long long int cuboSleep;
 
 
 #define SDA_PIN 21
@@ -57,11 +58,7 @@ void configTime();
 
 boolean getTime();
 
-String getNextTime();
-
-unsigned long timeToSeconds();
-
-unsigned long timeDifference(String, String);
+void timeToSleep();
 
 boolean isDay();
 

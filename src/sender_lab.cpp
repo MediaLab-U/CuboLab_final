@@ -32,7 +32,6 @@ void sendData(){
     int batteryLevel = readBatteryPorcentage();
     
     http.setTimeout(10000); // Tiempo de espera en milisegundos
-    // To-Do change to new function handleState
     handleState(NEW_SEND);
     String httpMessage = "https://www.unioviedo.es/medialab/datos_cube.php?e=" + String(currentSide) + "&m=%27" + (String)macStr + "%27&b=" + String(batteryLevel);
     Serial.println(httpMessage);
@@ -48,7 +47,14 @@ void sendData(){
     else{
         Serial.println("Error en la solicitud");
     }
-    
 
+    getTime();
+    preferences.putString("lastTime", cubeTime);
+    Serial.print("Cubo Time last: ");
+    Serial.println(cubeTime);
+    cuboSleep = 7200000000LL;
+
+    Serial.print("cuboSleep sleep:");
+    Serial.println(cuboSleep);
         
 }

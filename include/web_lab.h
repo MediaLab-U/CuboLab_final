@@ -10,6 +10,7 @@ extern boolean wifiUpdate;
 
 void handleRoot();
 void handleSave();
+void handleTest();
 void handleExit();
 void handleImage();
 void handleGif();

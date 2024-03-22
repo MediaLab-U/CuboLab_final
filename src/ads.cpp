@@ -28,7 +28,7 @@ int readBatteryPorcentage(){
   float limitetotal = (limitsup-limitinf);
   float lecturacortada = ((ads1015.readADC_SingleEnded(0)-limitinf));
   int batteryPorcentage = ((lecturacortada/limitetotal)*100);
-  Serial.println(batteryPorcentage);
+  
   if (batteryPorcentage <0) {
     batteryPorcentage=0;
   }

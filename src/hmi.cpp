@@ -1,5 +1,6 @@
 #include "hmi.h"
 
+int notas[] = {1320, 1320, 0, 1320, 0, 1047, 1320, 0, 1568, 0, 0, 0, 784};
 
 void initHMI() 
 {
@@ -11,41 +12,44 @@ void initHMI()
 }
 
 void ledBlue() {
-  digitalWrite(led_r, HIGH);
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_b, LOW);
+  ledsOff();
+  analogWrite(led_r, 255);
+  analogWrite(led_g, 255);
+  analogWrite(led_b, 0);
 }
 
 void ledGreen() {
-  digitalWrite(led_r, HIGH);
-  digitalWrite(led_g, LOW);
-  digitalWrite(led_b, HIGH);
+  ledsOff();
+  analogWrite(led_r, 255);
+  analogWrite(led_g, 0);
+  analogWrite(led_b, 255);
 }
 
 void ledRed() {
-  digitalWrite(led_r, LOW);
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_b, HIGH);
+  ledsOff();
+  analogWrite(led_r, 0);
+  analogWrite(led_g, 255);
+  analogWrite(led_b, 255);
 }
 
 void ledYellow(){
   ledsOff();
   analogWrite(led_r, 150);
-  digitalWrite(led_g, LOW);
-  digitalWrite(led_b, HIGH);
+  analogWrite(led_g, 0);
+  analogWrite(led_b, 255);
 }
 
 void ledPurple(){
   ledsOff();
   analogWrite(led_r, 150);
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_b, LOW);
+  analogWrite(led_g, 255);
+  analogWrite(led_b, 0);
 }
 
 void ledsOff() {
-  digitalWrite(led_r, HIGH);
-  digitalWrite(led_g, HIGH);
-  digitalWrite(led_b, HIGH);
+  analogWrite(led_r, 255);
+  analogWrite(led_g, 255);
+  analogWrite(led_b, 255);
 }
 
 
@@ -54,9 +58,14 @@ void handleState(State state) {
   switch (state) {
     case NO_CONNECTION:                           // To-Do que no sea tan sonido a muerte
       ledsOff();
-      for(int i = 0; i<5; i++){
+      for(int i = 0; i<2; i++){
         ledRed();
-        tone(BUZZER_PIN, 1000, 500);
+        tone(BUZZER_PIN, 500, 500);
+        delayLab(500);
+        ledsOff();
+        delayLab(500);
+        ledRed();
+        tone(BUZZER_PIN, 500, 500);
         delayLab(500);
         ledsOff();
         delayLab(500);
@@ -90,18 +99,17 @@ void handleState(State state) {
     
     case NO_BATTERY:
       ledsOff();
-      Serial.println("NO_BATTERY");
       for(int i = 0;  i<1; i++){
         for(int j = 0;  j<2; j++){
         
         ledRed();
         tone(BUZZER_PIN, 1000, 200);
-        delay(200);
+        delayLab(200);
         ledsOff();
-        delay(200);
+        delayLab(200);
         }
         
-        delay(2000);
+        delayLab(2000);
       }
       break;
 
@@ -157,6 +165,7 @@ void handleState(State state) {
     case NEW_SEND:
       ledBlue();
       tone(BUZZER_PIN, 1000, 500);
+      delayLab(2000);
       ledsOff();
       // 1 pitido
       break;
@@ -168,12 +177,25 @@ void handleState(State state) {
       break;
     
     case REMEMBER:
-      for(int i = 0; i <5; i++){
+      for(int i = 0; i <3; i++){
         tone(BUZZER_PIN, 1000, 500);
         delayLab(500);
-        tone(BUZZER_PIN, 1000, 500);
+        tone(BUZZER_PIN, 1250, 500);
+        delayLab(500);
+        tone(BUZZER_PIN, 1500, 500);
         delayLab(2000);
       }
+      break;
+
+    case MARIO_BROS:
+      // Reproducir la melodía
+      for (int i = 0; i < 13; i++) {
+        tone(BUZZER_PIN, notas[i]);
+        delayLab(200);
+        noTone(BUZZER_PIN);
+        delayLab(50);
+      }
+      delayLab(2000);
       break;
 
     default:
@@ -195,7 +217,7 @@ State readBatteryStateLab(boolean charge){
     } else if (batt >= 61 && batt <= 100) {
       return GREEN_BATTERY;
     }else{
-      return ERROR;
+      return NO_BATTERY;
     }
   }
   else{
@@ -209,7 +231,7 @@ State readBatteryStateLab(boolean charge){
       return FULL_CHARGE;
     }
     else{
-      return ERROR;
+      return NO_BATTERY;
     }
   }
 

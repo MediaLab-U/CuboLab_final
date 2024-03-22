@@ -5,9 +5,9 @@ void goToSleep()
 
   Serial.println("CuboSleep");
 
-
+  
   mpu.setMotionInterrupt(true);
-  mpu.setMotionDetectionThreshold(3.0f);                // To-Do Sensibilidad del cubo               
+  mpu.setMotionDetectionThreshold(5.0f);                // To-Do Sensibilidad del cubo               
   mpu.setMotionDetectionDuration(1);
 
   // Despertar al ESP32 cuando se conecte a la red
@@ -25,8 +25,9 @@ void goToSleep()
   }*/
 
   // Desperter cada 2h (por defecto para recordar uso)
-  long long int TIME_TO_SLEEP = 7200000000LL;
-  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP);
+  Serial.print("cuboSleep sleep:");
+  Serial.println(cuboSleep);
+  esp_sleep_enable_timer_wakeup(cuboSleep);
   esp_deep_sleep_start();
 }
 

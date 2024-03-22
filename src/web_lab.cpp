@@ -78,6 +78,18 @@ void handleSave()
 
 }
 
+void handleTest()
+{
+
+  State state2 = static_cast<State>(server.arg("state").toInt());
+  
+  handleState(state2);
+
+  handleRoot();
+  
+
+}
+
 void handleExit()
 {
   // Lee el contenido del archivo HTML
@@ -102,7 +114,9 @@ void handleExit()
 
   WiFi.disconnect(true);
 
-
+  ssid = preferences.getString("ssid", "MikroTik-B87EBD");
+  password = preferences.getString("pass", "medialab2019");
+  
   if(!connectWiFi()){
     State state = CORRECT_CONNECTION;
     handleState(state);

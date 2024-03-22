@@ -23,9 +23,9 @@ enum State {
   RED_CHARGE,
   NO_BATTERY,
   NEW_SEND,
-  ERROR,
   CONFIG,
   REMEMBER,
+  MARIO_BROS,
 };
 
 void initHMI();

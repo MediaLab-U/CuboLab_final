@@ -109,19 +109,19 @@ void calculateSide(){
 
     // Comprueba si el valor de ax, ay o az está dentro del rango de ±2g
     if (a.acceleration.x > (g - 2) && a.acceleration.x < (g + 2)) {
-        currentSide = 1; // Cara 1
+        currentSide = 2; // Cara 1
     } else if (a.acceleration.x > (-g - 2) && a.acceleration.x < (-g + 2)) {
-        currentSide = 2; // Cara 2
+        currentSide = 4; // Cara 2
     } else if (a.acceleration.y > (g - 2) && a.acceleration.y < (g + 2)) {
         currentSide = 3; // Cara 3
     } else if (a.acceleration.y > (-g - 2) && a.acceleration.y < (-g + 2)) {
-        currentSide = 4; // Cara 4
+        currentSide = 1; // Cara 4
     } else if (a.acceleration.z > (g - 2) && a.acceleration.z < (g + 2)) {
         currentSide = 5; // Cara 5
     } else if (a.acceleration.z > (-g - 2) && a.acceleration.z < (-g + 2)) {
-        currentSide = 6; // Cara 6
+        currentSide = 0; // Cara 0
     } else {
-        currentSide = 0; // Ninguna cara detectada
+        currentSide = preferences.getInt("PreviousSide", 0);
     }
 
     Serial.print("Cara actual: ");

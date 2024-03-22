@@ -49,7 +49,6 @@ void setup()
 
   Serial.println("Comprobamos nivel de bateria");
   state = readBatteryStateLab(false);                         // Leemos estado batería en carga
-  Serial.println(state);
   handleState(state);                                      
   
   Serial.println("Iniciando IMU");                            // Inicialización y configuración del IMU
@@ -95,7 +94,6 @@ void setup()
         goToSleep();
       }
       else{
-        configTime();                                                               // Configuramos hora
 
         if(getTime()){
 
@@ -161,7 +159,7 @@ void loop()
 
       if (!digitalRead(pin_tension)){
           Serial.println("Salimos de modo charge");
-          goToSleep();
+          cubeState = NORMAL_MODE;
         }
       break;
 
@@ -171,16 +169,20 @@ void loop()
       readIMU();
       calculateSide();
 
-      if (!sameSide()){
-        if(!connectWiFi()){    
-          handleState(NO_CONNECTION);                              
-          goToSleep();
-        }
-        if (WiFi.status() == WL_CONNECTED){
+      if(!connectWiFi()){    
+        handleState(NO_CONNECTION);                              
+        goToSleep();
+      }
+      if (WiFi.status() == WL_CONNECTED){
+
+        if (!sameSide()){
           sendData(); 
         }
-      }
+        else{
+          timeToSleep();
+        }
 
+      }
       // To-Do
       goToSleep();
       break;
