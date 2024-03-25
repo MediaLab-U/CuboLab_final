@@ -52,7 +52,11 @@ void ledsOff() {
   analogWrite(led_b, 255);
 }
 
-
+void testBuzzer(){
+  digitalWrite(BUZZER_PIN, HIGH);
+  delay(5000);
+  digitalWrite(BUZZER_PIN, LOW);
+}
 
 void handleState(State state) {
   switch (state) {
@@ -60,12 +64,12 @@ void handleState(State state) {
       ledsOff();
       for(int i = 0; i<2; i++){
         ledRed();
-        tone(BUZZER_PIN, 500, 500);
+       //tone(BUZZER_PIN, 500, 500);
         delayLab(500);
         ledsOff();
         delayLab(500);
         ledRed();
-        tone(BUZZER_PIN, 500, 500);
+       //tone(BUZZER_PIN, 500, 500);
         delayLab(500);
         ledsOff();
         delayLab(500);
@@ -103,7 +107,7 @@ void handleState(State state) {
         for(int j = 0;  j<2; j++){
         
         ledRed();
-        tone(BUZZER_PIN, 1000, 200);
+       //tone(BUZZER_PIN, 1000, 200);
         delayLab(200);
         ledsOff();
         delayLab(200);
@@ -164,7 +168,7 @@ void handleState(State state) {
       
     case NEW_SEND:
       ledBlue();
-      tone(BUZZER_PIN, 1000, 500);
+      //tone(BUZZER_PIN, 1000, 500);
       delayLab(2000);
       ledsOff();
       // 1 pitido
@@ -178,11 +182,11 @@ void handleState(State state) {
     
     case REMEMBER:
       for(int i = 0; i <3; i++){
-        tone(BUZZER_PIN, 1000, 500);
+        //tone(BUZZER_PIN, 1000, 500);
         delayLab(500);
-        tone(BUZZER_PIN, 1250, 500);
+        //tone(BUZZER_PIN, 1250, 500);
         delayLab(500);
-        tone(BUZZER_PIN, 1500, 500);
+        //tone(BUZZER_PIN, 1500, 500);
         delayLab(2000);
       }
       break;
@@ -190,9 +194,9 @@ void handleState(State state) {
     case MARIO_BROS:
       // Reproducir la melodía
       for (int i = 0; i < 13; i++) {
-        tone(BUZZER_PIN, notas[i]);
+        //tone(BUZZER_PIN, notas[i]);
         delayLab(200);
-        noTone(BUZZER_PIN);
+       //notone(BUZZER_PIN);
         delayLab(50);
       }
       delayLab(2000);

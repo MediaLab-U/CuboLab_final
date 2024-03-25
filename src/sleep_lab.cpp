@@ -11,7 +11,7 @@ void goToSleep()
   mpu.setMotionDetectionDuration(1);
 
   // Despertar al ESP32 cuando se conecte a la red
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 1);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 1);
 
   // Despertar al ESP32 cuando se mueva el MPU
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1);

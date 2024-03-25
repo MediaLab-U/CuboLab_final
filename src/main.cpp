@@ -21,34 +21,35 @@ void setup()
   Serial.println("Configurando Human Interface");             // Configurar Leds y Buzzer
   initHMI();
 
-  /*
-  ledGreen();
-  delay(1000);
-  ledsOff();
-  delay(1000);
-  ledBlue();
-  delay(1000);
-  ledsOff();
-  delay(1000);
-  ledYellow();
-  delay(1000);
-  ledsOff();
-  delay(1000);
-  ledRed();
-  delay(1000);
-  ledsOff();
-  delay(1000);
-  ledPurple();
-  delay(1000);
-  ledsOff();*/
-  
-  
+  boolean testHMI = false;
 
-  Serial.println("Configurando ADS");                         // Configurar ADC para lectura de batería
-  initADS();
+  if(testHMI) {
+    Serial.println("ROJO");
+    ledRed();
+    delay(1000);
+    ledsOff();
+    delay(1000);
+    Serial.println("VERDE");
+    ledGreen();
+    delay(1000);
+    ledsOff();
+    delay(1000);
+    Serial.println("AZUL");
+    ledBlue();
+    delay(1000);
+    ledsOff();
+    delay(1000);
+
+    testBuzzer();
+  }
+  
+ 
+
 
   Serial.println("Comprobamos nivel de bateria");
   state = readBatteryStateLab(false);                         // Leemos estado batería en carga
+  Serial.print("STATE: ");
+  Serial.println(state);
   handleState(state);                                      
   
   Serial.println("Iniciando IMU");                            // Inicialización y configuración del IMU
@@ -73,7 +74,9 @@ void setup()
 
     case ESP_SLEEP_WAKEUP_EXT0:
       // CARGA
-      if (digitalRead(GPIO_NUM_4) == HIGH) {
+      // TO-DO revisar que esto se pone a low cuando se conecta...
+      Serial.println(analogRead(VCharge));
+      if (analogRead(VCharge) > 3500) {
         Serial.println("El dispositivo se ha enchufado");
         cubeState = WIFI_CONFIG;
       } 
@@ -109,6 +112,7 @@ void setup()
       break;
 
     default:
+      Serial.println("No sé porqué desperté");
       break;
   }
 

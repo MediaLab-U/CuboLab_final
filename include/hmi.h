@@ -5,9 +5,9 @@
 
 #include "configuration.h"
 
+#define led_r 25
 #define led_g 26
-#define led_b 25
-#define led_r 27
+#define led_b 27
 
 #define BUZZER_PIN 18
 
@@ -29,7 +29,7 @@ enum State {
 };
 
 void initHMI();
-
+void testBuzzer();
 void ledBlue();
 void ledGreen();
 void ledYellow();
