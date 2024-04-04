@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuboLab</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 80%;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Centrar el contenido del contenedor */
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .wifi-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .wifi-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .wifi-item:hover {
+            background-color: #e9e9e9;
+        }
+
+        .password-form {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        label {
+            display: block;
+            color: #333;
+        }
+
+        input[type="password"] {
+            max-width: 80%;
+            padding: 10px;
+            margin: 20px auto; /* Centrar el input */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: block; /* Convertir en bloque para centrar */
+
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Estilos para el contenedor de datos */
+        .data-container {
+            margin-top: 20px;
+            text-align: left; /* Alinear a la izquierda */
+        }
+
+        .data-container h2 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src='/image' width='200' style="display: block; margin: 0 auto;"> <!-- Centrar la imagen -->
+        <h1>Seleccionar Red WiFi</h1>
+        <form action="/save" method="post">
+            <select name="ssid" id="net" class="wifi-list">
+                {networks}
+            </select>
+            <br>
+            <input class="pass" type="password" name="password" placeholder="Introducir contraseña WiFi">
+            <br>
+            <button type="submit">Guardar WiFi</button>
+        </form>    
+    </div>
+    <div class="container">
+        <form action="/test" method="post">
+            <label for="state">Selecciona un estado:</label>
+            <select id="state" name="state">
+              <option value="0">Sin conexión</option>
+              <option value="1">Conexión correcta</option>
+              <option value="2">Batería verde</option>
+              <option value="3">Batería amarilla</option>
+              <option value="4">Batería roja</option>
+              <option value="5">Carga completa</option>
+              <option value="6">Carga verde</option>
+              <option value="7">Carga amarilla</option>
+              <option value="8">Carga roja</option>
+              <option value="9">Sin batería</option>
+              <option value="10">Nuevo envío</option>
+              <option value="11">Configuración</option>
+              <option value="12">Recordar</option>
+              <option value="13">Mario</option>
+            </select>
+            <button type="submit">Test</button>
+          </form>
+    </div>
+    <div class="container">
+      <h2>Datos:</h2>
+      <p>Dipositivo Mac: {MAC}</p>
+      <p>Voltaje de batería: {batteryVoltage}V</p>
+      <p>Porcentaje de Carga: {batteryPorcentage}%</p>
+      <p>Nombre WiFi: {ssid}</p>
+      <p>Contraseña WiFi: {password}</p>
+      <form action="/exit" method="post">
+        <button type="submit">Salir del Modo Configuración</button>
+      </form>
+      
+    </div>
+</body>
+</html>

@@ -11,11 +11,7 @@
 #include <HTTPClient.h>
 #include "I2Cdev.h"
 #include <WebServer.h>
-#include "ticker.h"
 #include <LITTLEFS.h>
-#include <Adafruit_ADS1X15.h>
-#include <Adafruit_I2CDevice.h>
-#include <SPI.h>
 #include "Time.h"
 
 #include <Arduino.h>
@@ -36,11 +32,11 @@ extern String cubeTime;
 
 extern long long int cuboSleep;
 
+#define VBat    34
+#define VCharge 33
 
 #define SDA_PIN 21
 #define SCL_PIN 22
-
-#define VCHARGE 33
 
 enum CubeState {
     WIFI_CONFIG,
