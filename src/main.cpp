@@ -10,11 +10,15 @@
 #include <WebServer.h>
 #include "ticker.h"
 
+<<<<<<< Updated upstream
 //Pines LEDS y seguidor de tensión
 #define led_g 26
 #define led_b 25
 #define led_r 27
 #define analog_input 35
+=======
+
+>>>>>>> Stashed changes
 
 // Pines y dirección I2C
 #define SDA_PIN 21
@@ -263,6 +267,7 @@ void setup()
   mpu.begin();
   preferences.begin("myPreferences", false);
 
+<<<<<<< Updated upstream
   // Comenzar conexión I2C
   // Wire.begin(SDA_PIN, SCL_PIN);
 
@@ -273,6 +278,42 @@ void setup()
   ssid1 = preferences.getString("ssid", "medialab");
   password1 = preferences.getString("pass", "medialab");
   WiFi.begin(ssid1.c_str(), password1.c_str());
+=======
+  
+  /*ledGreen();
+  delay(1000);
+  ledsOff();
+  delay(1000);
+
+  ledBlue();
+  delay(1000);
+  ledsOff();
+  delay(1000);
+  
+  ledYellow();
+  delay(1000);
+  ledsOff();
+  delay(1000);
+  
+  ledRed();
+  delay(1000);
+  ledsOff();
+  delay(1000);
+  
+  ledPurple();
+  delay(1000);
+  ledsOff();
+  delay(1000);*/
+
+  // testBuzzer();
+  
+  Serial.println("Comprobamos nivel de bateria");
+  state = readBatteryStateLab(false);                         // Leemos estado batería en carga
+  handleState(state);                                      
+  
+  Serial.println("Iniciando IMU");                            // Inicialización y configuración del IMU
+  initIMU();
+>>>>>>> Stashed changes
 
   // Configuración para dejar activos los pines de batería
   // Configurar los pines 4, 5 y 6 como entrada
@@ -315,8 +356,22 @@ void setup()
     digitalWrite(led_r, HIGH);
     delay(800);
 
+<<<<<<< Updated upstream
     if (WiFi.status() == WL_CONNECTED)
     {
+=======
+    case ESP_SLEEP_WAKEUP_EXT0:
+      // CARGA
+      if (analogRead(33) > 2024) {
+        Serial.println("El dispositivo se ha enchufado");
+        cubeState = WIFI_CONFIG;
+      } 
+      // MOVIMIENTO
+      else {
+        Serial.println("El dispositivo ha detectado un movimiento");
+        cubeState = NORMAL_MODE;
+      }
+>>>>>>> Stashed changes
       break;
     }
 
@@ -1010,6 +1065,41 @@ void loop()
         {
           break;
         }
+<<<<<<< Updated upstream
+=======
+        
+        server.handleClient();                                            // Respondemos peticiones servidor web configuración
+
+        if ((millis()-t1)>=(2*60*1000)){
+          Serial.println("Se sale del modo configuración wifi por timeout");
+
+          WiFi.disconnect(true);
+          cubeState = CHARGE;
+        }
+
+        break;
+      
+    case CHARGE:
+      state = readBatteryStateLab(true);                          // Leemos estado batería en carga  
+
+      handleState(state);                                        // Mostramos por hmi la carga
+
+      if (!digitalRead(VCHARGE)){
+          Serial.println("Salimos de modo charge");
+          cubeState = NORMAL_MODE;
+        }
+      break;
+
+    case NORMAL_MODE:
+
+      // Activamos configuraciones de interrupción del IMU
+      readIMU();
+      calculateSide();
+
+      if(!connectWiFi()){    
+        handleState(NO_CONNECTION);                              
+        goToSleep();
+>>>>>>> Stashed changes
       }
       timefin = Ctimer() - timeini;
       Serial.println(timefin);
