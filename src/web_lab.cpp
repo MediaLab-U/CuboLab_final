@@ -62,16 +62,13 @@ void handleSave()
 
   ssid = preferences.getString("ssid", "MikroTik-B87EBD");
   password = preferences.getString("pass", "medialab2019");
-  preferences.end();
+  //preferences.end();
   
 
   Serial.println(ssid.c_str());
   Serial.println(password.c_str());
 
-  Serial.println("wifiUpdate");
-  Serial.println(wifiUpdate);
   wifiUpdate = true;
-  Serial.println(wifiUpdate);
 
   handleRoot();
   
@@ -118,7 +115,7 @@ void handleExit()
   password = preferences.getString("pass", "medialab2019");
   
   if(!connectWiFi()){
-    State state = CORRECT_CONNECTION;
+    State state = NO_CONNECTION;
     handleState(state);
 
     goToSleep();

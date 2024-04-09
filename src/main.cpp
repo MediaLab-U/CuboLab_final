@@ -74,8 +74,6 @@ void setup()
 
     case ESP_SLEEP_WAKEUP_EXT0:
       // CARGA
-      // TO-DO revisar que esto se pone a low cuando se conecta...
-      Serial.println(analogRead(VCharge));
       if (analogRead(VCharge) > 3500) {
         Serial.println("El dispositivo se ha enchufado");
         cubeState = WIFI_CONFIG;
@@ -112,7 +110,16 @@ void setup()
       break;
 
     default:
-      Serial.println("No sé porqué desperté");
+      // CARGA
+      if (analogRead(VCharge) > 3500) {
+        Serial.println("El dispositivo se ha enchufado");
+        cubeState = WIFI_CONFIG;
+      } 
+      // MOVIMIENTO
+      else {
+        Serial.println("El dispositivo ha detectado un movimiento");
+        cubeState = NORMAL_MODE;
+      }
       break;
   }
 
@@ -128,12 +135,12 @@ void loop()
   switch (cubeState) {
     
     case WIFI_CONFIG: 
-        state = readBatteryStateLab(true);                                // Leemos estado batería en carga
+        // state = readBatteryStateLab(true);                                // Leemos estado batería en carga
         
-        handleState(GREEN_CHARGE);                                               // Mostramos por hmi la carga
+        handleState(GREEN_CHARGE);                                           // Mostramos por hmi la carga
 
 
-        if (firstConfig){                                                 // La primera vez configuramos el punto AP
+        if (firstConfig){                                                    // La primera vez configuramos el punto AP
           
           Serial.println("Primera configuración");
           
@@ -145,7 +152,7 @@ void loop()
           firstConfig = false;
         }
         
-        server.handleClient();                                            // Respondemos peticiones servidor web configuración
+        server.handleClient();                                              // Respondemos peticiones servidor web configuración
 
         if ((millis()-t1)>=(2*60*1000)){
           Serial.println("Se sale del modo configuración wifi por timeout");
@@ -157,11 +164,11 @@ void loop()
         break;
       
     case CHARGE:
-      state = readBatteryStateLab(true);                          // Leemos estado batería en carga  
+      // state = readBatteryStateLab(true);                             // Leemos estado batería en carga  
 
-      handleState(state);                                        // Mostramos por hmi la carga
+      handleState(GREEN_CHARGE);                                        // Mostramos por hmi la carga
 
-      if (!digitalRead(pin_tension)){
+      if (analogRead(VCharge) < 3500){
           Serial.println("Salimos de modo charge");
           cubeState = NORMAL_MODE;
         }
