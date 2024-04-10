@@ -8,7 +8,8 @@ int batteryPorcentage = 0;
 
 float readBatteryLevel(){
   batteryLevel = analogRead(34);
-  batteryLevel = batteryLevel * 5.6/2288;
+  batteryLevel = (batteryLevel - 2618) * 100;  //2618 Lectura minima analogica a 6.2 V
+  batteryLevel = (batteryLevel/1182);          //3800 maximo a 8.4 V menos 2618 minimo a 6.2 V es igual a 1182
 
   
   //float batteryCell1 = analogRead(32);
@@ -20,7 +21,7 @@ float readBatteryLevel(){
 }
 
 int readBatteryPorcentage(){
-  int batteryPorcentage = readBatteryLevel()/8.4*100;
+  int batteryPorcentage = readBatteryLevel();
   if (batteryPorcentage <0) {
     batteryPorcentage=0;
   }
