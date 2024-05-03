@@ -9,12 +9,12 @@ void initIMU(){
     if (!mpu.begin()) {
         // Manejar el fallo de inicialización
         Serial.println("MPU6050 INCORRECTO");
-        while (1)
+        /*while (1)
         {
         delay(1000);
         Serial.println("Reiniciando ESP32");
         esp_restart();
-        }
+        }*/
     }
 
     configIMU();

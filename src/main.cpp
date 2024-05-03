@@ -69,7 +69,7 @@ void setup()
   /*--------------------------------------------------------------- POR QUÉ DESPIERTO --------------------------------------------------------------*/
 
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-
+  Serial.println(wakeup_reason);
   switch(wakeup_reason) {
 
     case ESP_SLEEP_WAKEUP_EXT0:
@@ -123,7 +123,10 @@ void setup()
       break;
   }
 
-  
+  if (analogRead(VCharge) > 3500) {
+        Serial.println("El dispositivo se ha enchufado");
+        cubeState = WIFI_CONFIG;
+      } 
   
   Serial.println ("Fin de la Configuración Inicial");
 

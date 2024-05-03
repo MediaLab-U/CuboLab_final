@@ -8,12 +8,16 @@ int batteryPorcentage = 0;
 
 float readBatteryLevel(){
   batteryLevel = analogRead(34);
+  Serial.println(batteryLevel);
+  if (batteryLevel<2618){batteryLevel = 2618;}
   batteryLevel = (batteryLevel - 2618) * 100;  //2618 Lectura minima analogica a 6.2 V
+  Serial.println(batteryLevel);
   batteryLevel = (batteryLevel/1182);          //3800 maximo a 8.4 V menos 2618 minimo a 6.2 V es igual a 1182
+  Serial.println(batteryLevel);
 
   
   //float batteryCell1 = analogRead(32);
-  //batteryCell1 = batteryCell1 * 2.02/1216;
+  //batteryLevel = batteryLevel * 2.02/1216;
 
 
   //batteryCell = batteryLevel - batteryCell1;
@@ -22,6 +26,7 @@ float readBatteryLevel(){
 
 int readBatteryPorcentage(){
   int batteryPorcentage = readBatteryLevel();
+  Serial.println(batteryPorcentage);
   if (batteryPorcentage <0) {
     batteryPorcentage=0;
   }

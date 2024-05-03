@@ -5,6 +5,7 @@
 
 #include "configuration.h"
 
+
 void goToSleep();
 void configSleep();
 

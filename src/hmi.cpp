@@ -111,7 +111,7 @@ void handleState(State state) {
         for(int j = 0;  j<2; j++){
         
         ledRed();
-        tone(BUZZER_PIN, 1000, 200);
+        //tone(BUZZER_PIN, 1000, 200);
         delayLab(200);
         ledsOff();
         delayLab(200);
