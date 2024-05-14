@@ -79,3 +79,9 @@ void scanNetworks()
 
   networksAvailable = true;
 }
+
+void updateFirmware(){
+  WiFiClient client;
+  t_httpUpdate_return ret = httpUpdate.updateSpiffs(client, "http://192.168.1.70:3000/update/0.2");
+
+}

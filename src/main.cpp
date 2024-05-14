@@ -42,14 +42,9 @@ void setup()
 
     testBuzzer();
   }
-  
- 
-
 
   Serial.println("Comprobamos nivel de bateria");
   state = readBatteryStateLab(false);                         // Leemos estado batería en carga
-  Serial.print("STATE: ");
-  Serial.println(state);
   handleState(state);                                      
   
   Serial.println("Iniciando IMU");                            // Inicialización y configuración del IMU
@@ -95,7 +90,8 @@ void setup()
         goToSleep();
       }
       else{
-
+        updateFirmware();
+        sendBattery();
         if(getTime()){
 
           // ¿Es de día? 
@@ -123,6 +119,8 @@ void setup()
       break;
   }
 
+  // Hay veces que a pesar de estar enchufado piensa que despierta por movimiento
+  // por eso lo volvemos a forzar aquí en caso de que esté enchufado.
   if (analogRead(VCharge) > 3500) {
         Serial.println("El dispositivo se ha enchufado");
         cubeState = WIFI_CONFIG;
@@ -138,7 +136,6 @@ void loop()
   switch (cubeState) {
     
     case WIFI_CONFIG: 
-        // state = readBatteryStateLab(true);                                // Leemos estado batería en carga
         
         handleState(GREEN_CHARGE);                                           // Mostramos por hmi la carga
 
@@ -157,17 +154,22 @@ void loop()
         
         server.handleClient();                                              // Respondemos peticiones servidor web configuración
 
-        if ((millis()-t1)>=(2*60*1000)){
+        if ((millis()-t1)>=(2*60*1000)){                                    // TimeOut de 2 min para finalizar configuración
           Serial.println("Se sale del modo configuración wifi por timeout");
 
           WiFi.disconnect(true);
           cubeState = CHARGE;
         }
 
+        if (analogRead(VCharge) < 3500){                                     // Si se desenchufa salimos del modo configuración                       
+          Serial.println("Salimos de modo charge");
+          WiFi.disconnect(true);
+          cubeState = NORMAL_MODE;
+        }
+
         break;
       
     case CHARGE:
-      // state = readBatteryStateLab(true);                             // Leemos estado batería en carga  
 
       handleState(GREEN_CHARGE);                                        // Mostramos por hmi la carga
 

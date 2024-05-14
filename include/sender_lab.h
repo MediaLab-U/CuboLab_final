@@ -9,7 +9,7 @@ extern HTTPClient http;
 
 boolean sameSide();
 void sendData();
-void manejarTrabajoRealizado();
+void sendBattery();
 
 
 #endif // SENDERLAB_H

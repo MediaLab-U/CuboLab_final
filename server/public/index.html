@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    .container {
+        margin-top: 50px;
+    }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="#">Dashboard</a>
+    </div>
+</nav>
+
+<div class="container">
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="firmwareFile">Seleccionar archivo</label>
+            <input type="file" class="form-control-file" id="firmwareFile" name="firmwareFile">
+        </div>
+        <button type="submit" class="btn btn-primary">Añadir</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#uploadForm').submit(function(event) {
+            event.preventDefault();
+
+            var formData = new FormData();
+            formData.append('firmwareFile', $('#firmwareFile')[0].files[0]);
+
+            $.ajax({
+                url: '/upload',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    alert('Archivo subido correctamente');
+                },
+                error: function(xhr, status, error) {
+                    alert('Error al subir el archivo: ' + error);
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

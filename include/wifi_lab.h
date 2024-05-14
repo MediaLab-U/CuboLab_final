@@ -24,4 +24,6 @@ void createWifi();
 
 void scanNetworks();
 
+void updateFirmware();
+
 #endif // WIFILAB_H

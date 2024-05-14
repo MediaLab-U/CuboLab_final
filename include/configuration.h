@@ -9,6 +9,7 @@
 #include <Preferences.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <HTTPUpdate.h>
 #include "I2Cdev.h"
 #include <WebServer.h>
 #include <LITTLEFS.h>
