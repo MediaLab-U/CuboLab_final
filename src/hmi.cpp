@@ -1,6 +1,7 @@
 #include "hmi.h"
 
 int notas[] = {1320, 1320, 0, 1320, 0, 1047, 1320, 0, 1568, 0, 0, 0, 784};
+int notas2[] = {1320, 1320, 0, 1047, 0, 1320};
 
 void initHMI() 
 {
@@ -140,33 +141,16 @@ void handleState(State state) {
       ledsOff();
       break;
 
-    case BLUE_CONFIG:
+    case CONFIG:
       ledsOff();
-      for (int brillo = 0; brillo <= 255; brillo++) {
-        analogWrite(led_b, brillo);
-        delayLab(10);
-      }
-
-      for (int brillo = 255; brillo >= 0; brillo--) {
-        analogWrite(led_b, brillo);
-        delayLab(10);
-      }
+      ledRed();
+      delayLab(500);
+      ledsOff();
+      ledGreen();
+      delayLab(500);
       ledsOff();
       break;
 
-    case RED_CHARGE:
-      ledsOff();
-      for (int brillo = 0; brillo <= 255; brillo++) {
-        analogWrite(led_r, brillo);
-        delayLab(10);
-      }
-
-      for (int brillo = 255; brillo >= 0; brillo--) {
-        analogWrite(led_r, brillo);
-        delayLab(10);
-      }
-      ledsOff();
-      break;
       
     case NEW_SEND:
       ledBlue();
@@ -174,12 +158,6 @@ void handleState(State state) {
       delayLab(2000);
       ledsOff();
       // 1 pitido
-      break;
-
-    case CONFIG:
-      ledPurple();
-      delayLab(10000);
-      ledsOff();
       break;
     
     case REMEMBER:
@@ -204,6 +182,28 @@ void handleState(State state) {
       delayLab(2000);
       break;
 
+    case UPDATED_OK:
+      // Reproducir la melodía
+      for (int i = 0; i < 6; i++) {
+        tone(BUZZER_PIN, notas2[i]);
+        if(i%2==0){
+          ledsOff();
+          ledRed();
+        }else{
+          ledsOff();
+          ledPurple();
+        }
+        delayLab(200);
+        noTone(BUZZER_PIN);
+        delayLab(50);
+      }
+      
+      ledsOff();
+      ledGreen();
+      delayLab(2000);
+      break;
+
+
     default:
       // Estado desconocido
       break;
@@ -211,34 +211,19 @@ void handleState(State state) {
 }
 
 
-State readBatteryStateLab(boolean charge){
+State readBatteryStateLab(){
   int batt= readBatteryPorcentage();
-  if(!charge){
-    if (batt >= 0 && batt <= 10) {
-      return NO_BATTERY;
-    } else if (batt >= 11 && batt <= 30) {
-      return RED_BATTERY;
-    } else if (batt >= 31 && batt <= 60) {
-      return YELLOW_BATTERY;
-    } else if (batt >= 61 && batt <= 100) {
-      return GREEN_BATTERY;
-    }else{
-      return NO_BATTERY;
-    }
-  }
-  else{
-    if (batt >= 0 && batt <= 30) {
-      return RED_CHARGE;
-    } else if (batt >= 31 && batt <= 60) {
-      return BLUE_CONFIG;
-    } else if (batt >= 61 && batt <= 90) {
-      return GREEN_CHARGE;
-    } else if (batt >= 91 && batt <= 100) {
-      return FULL_CHARGE;
-    }
-    else{
-      return NO_BATTERY;
-    }
+
+  if (batt >= 0 && batt <= 10) {
+    return NO_BATTERY;
+  } else if (batt >= 11 && batt <= 30) {
+    return RED_BATTERY;
+  } else if (batt >= 31 && batt <= 60) {
+    return YELLOW_BATTERY;
+  } else if (batt >= 61 && batt <= 100) {
+    return GREEN_BATTERY;
+  }else{
+    return NO_BATTERY;
   }
 
 }
