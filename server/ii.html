@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+    <title>MediaLab Server</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="./bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="cover.css" rel="stylesheet">
+
+    <style>
+      #firmwareTable{
+        background-color: white;
+        color:black;
+      }
+    </style>
+</head>
+
+<body class="text-center">
+
+<div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+    <header class="masthead mb-auto">
+        <div class="inner">
+            <h3 class="masthead-brand">MediaLab</h3>
+            <nav class="nav nav-masthead justify-content-center">
+                <a class="nav-link active" href="#">Inicio</a>
+                <a class="nav-link" href="#">Futuras Implementaciones</a>
+                <a class="nav-link" href="#">Contacto</a>
+            </nav>
+        </div>
+    </header>
+
+    <main role="main" class="inner cover">
+        <h1 class="cover-heading">MediaLab</h1>
+        <p class="lead">El Laboratorio que da vida a las ideas</p>
+        <p class="lead">
+            <a href="https://medialab-uniovi.es/" class="btn btn-lg btn-secondary">Saber más</a>
+        </p>
+        <!-- Aquí se agregará la tabla -->
+    </main>
+
+    <footer class="mastfoot mt-auto">
+        <div class="inner">
+            <p>MediaLab-Uniovi 2024.</p>
+        </div>
+    </footer>
+</div>
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script>window.jQuery || document.write('<script src="bootstrap/assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+<script src="./bootstrap/assets/js/vendor/popper.min.js"></script>
+<script src="./bootstrap/dist/js/bootstrap.min.js"></script>
+
+<!-- Script para cargar los datos de la tabla desde el servidor -->
+<script>
+    // Cuando se carga la página, se hace la petición al servidor para obtener los datos de firmware
+    
+    function handleUpdateRequest() {
+        // Obtener el parámetro 'v' de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const expectedVersion = urlParams.get('v');
+
+        // Verificar si la versión esperada es menor que la última versión disponible
+        const latestVersion = "1.0"; // Aquí debes colocar la última versión disponible
+        if (expectedVersion && expectedVersion < latestVersion) {
+            // La versión esperada es menor que la última versión disponible
+            return Promise.resolve(true);
+        } else {
+            // La versión esperada es igual o mayor que la última versión disponible
+            return Promise.resolve(false);
+        }
+    }
+
+       
+
+    
+    window.onload = function () {
+        handleUpdateRequest().then(updateAvailable => {
+            if (updateAvailable) {
+                console.log("Actualización disponible");
+                const link = document.createElement('a');
+                link.href = './firm/latest.bin';
+                link.download = 'latest.bin'; // Nombre del archivo .bin
+                link.click();
+            } else {
+                // Crear un enlace para descargar el archivo .bin
+                console.log("Ya está actualizado");
+            }
+        }).catch(error => {
+            console.error(error);
+        });
+    };
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#define FIRMWARE_VERSION "0.1"
 
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
@@ -14,6 +15,7 @@
 #include <WebServer.h>
 #include <LITTLEFS.h>
 #include "Time.h"
+#include <WiFiMulti.h>
 
 #include <Arduino.h>
 
@@ -32,6 +34,8 @@ extern boolean firstConfig;
 extern String cubeTime;
 
 extern long long int cuboSleep;
+
+extern float cubeVersion;
 
 #define VBat    34
 #define VCharge 33

@@ -3,6 +3,8 @@
 WebServer server(80);
 boolean wifiUpdate = false;
 
+WiFiMulti wifiMulti;
+
 void handleRoot()
 {
     // Si el escaner de redes wifi está lista devolemos el html con las wifis
@@ -29,12 +31,25 @@ void handleRoot()
           content.replace("{WifiUpdate}", "");
         }
 
-        
+        String wifiSsid="ssid1";
+        String ssid1 = preferences.getString(wifiSsid.c_str(), "");
+        wifiSsid="ssid2";
+        String ssid2 = preferences.getString(wifiSsid.c_str(), "");
+        wifiSsid="ssid3";
+        String ssid3 = preferences.getString(wifiSsid.c_str(), "");
+        wifiSsid="ssid4";
+        String ssid4 = preferences.getString(wifiSsid.c_str(), "");
+        wifiSsid="ssid5";
+        String ssid5 = preferences.getString(wifiSsid.c_str(), "");
+      
         content.replace("{MAC}", macStr);
         content.replace("{batteryVoltage}", String(readBatteryLevel()));
         content.replace("{batteryPorcentage}", String(readBatteryPorcentage()));
-        content.replace("{ssid}", ssid);
-        content.replace("{password}", password);
+        content.replace("{ssid1}", ssid1);
+        content.replace("{ssid2}", ssid2);
+        content.replace("{ssid3}", ssid3);
+        content.replace("{ssid4}", ssid4);
+        content.replace("{ssid5}", ssid5);
 
         server.send(200, "text/html", content);
 
@@ -56,17 +71,33 @@ void handleSave()
   ssid = server.arg("ssid");
   password = server.arg("password");
 
-  preferences.putString("ssid", ssid);
-  preferences.putString("pass", password);
-
-
-  ssid = preferences.getString("ssid", "MikroTik-B87EBD");
-  password = preferences.getString("pass", "medialab2019");
-  //preferences.end();
+  int counter = preferences.getInt("counter", 0);
   
+  // Si el contador llega a 5, reiniciar a 1
+  if (counter >= 5) {
+    counter = 1;
+  } else {
+    counter++; // Incrementar el contador
+  }
 
-  Serial.println(ssid.c_str());
-  Serial.println(password.c_str());
+  // Crear las claves para el ssid y el password basadas en el contador
+  String ssidKey = "ssid" + String(counter);
+  String passKey = "pass" + String(counter);
+
+
+  // Guardar el ssid y el password utilizando las claves correspondientes
+  preferences.putString(ssidKey.c_str(), ssid);
+  preferences.putString(passKey.c_str(), password);
+
+ // Convertir los SSID y contraseñas a const char*
+  const char* ssidChar = ssid.c_str();
+  const char* passwordChar = password.c_str();
+
+  // Agregar la red WiFi con su contraseña
+  wifiMulti.addAP(ssidChar, passwordChar);
+  
+  // Guardar el nuevo valor del contador
+  preferences.putInt("counter", counter);
 
   wifiUpdate = true;
 

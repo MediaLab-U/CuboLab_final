@@ -26,7 +26,12 @@ void configMode()
     WiFi.disconnect(true);
     
     Serial.println("Creamos WifiCube");
-    WiFi.softAP(ssidAP.c_str(), passwordAP.c_str());
+    String apName = "ConfigCubo-";
+    
+    apName += getLastMac();
+
+    Serial.println(apName);
+    WiFi.softAP(apName, passwordAP.c_str());
     delay(100);
 
     Serial.println("Añadimos rutas de servidor");

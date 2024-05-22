@@ -5,8 +5,9 @@
 
 long t1;
   
-
 State state;
+
+float cubeVersion = 1.0;
 
 void setup()
 {
@@ -16,12 +17,15 @@ void setup()
   Serial.begin(115200);
  
   Serial.println("");
-  Serial.println("Iniciando cubo");
+  Serial.println("Iniciando cubo V1");
   
   Serial.println("Configurando Human Interface");             // Configurar Leds y Buzzer
   initHMI();
 
   boolean testHMI = false;
+
+  Serial.print("CubeVersion: ");
+  Serial.println(cubeVersion);
 
   if(testHMI) {
     Serial.println("ROJO");
@@ -137,7 +141,7 @@ void loop()
     
     case WIFI_CONFIG: 
         
-        handleState(GREEN_CHARGE);                                           // Mostramos por hmi la carga
+        handleState(BLUE_CONFIG);                                           // Mostramos por hmi la carga
 
 
         if (firstConfig){                                                    // La primera vez configuramos el punto AP
@@ -185,22 +189,32 @@ void loop()
       readIMU();
       calculateSide();
 
-      if(!connectWiFi()){    
-        handleState(NO_CONNECTION);                              
+      if(!connectWiFi2()){    
+        if (!sameSide()){
+          handleState(NO_CONNECTION);                              
+          
+        }
         goToSleep();
       }
       if (WiFi.status() == WL_CONNECTED){
-
         if (!sameSide()){
           sendData(); 
+          updateFirmware();
         }
         else{
+          updateFirmware();
           timeToSleep();
         }
 
       }
       // To-Do
-      goToSleep();
+      if (analogRead(VCharge) > 3500) {
+        Serial.println("El dispositivo se ha enchufado");
+        cubeState = WIFI_CONFIG;
+      }
+      else{
+        goToSleep();
+      }
       break;
 
     default: 

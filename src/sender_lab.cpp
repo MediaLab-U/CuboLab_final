@@ -4,7 +4,6 @@ HTTPClient http;
 
 
 boolean sameSide(){
-    Serial.println("Send Data");
 
     int previousSide = preferences.getInt("PreviousSide", 0);
     preferences.putInt("PreviousSide", currentSide);
@@ -33,6 +32,7 @@ void sendData(){
     
     http.setTimeout(10000); // Tiempo de espera en milisegundos
     handleState(NEW_SEND);
+    getMac();
     String httpMessage = "https://www.unioviedo.es/medialab/datos_cube.php?e=" + String(currentSide) + "&m=%27" + (String)macStr + "%27&b=" + String(batteryLevel);
     Serial.println(httpMessage);
     http.begin(httpMessage);
@@ -50,12 +50,7 @@ void sendData(){
 
     getTime();
     preferences.putString("lastTime", cubeTime);
-    Serial.print("Cubo Time last: ");
-    Serial.println(cubeTime);
     cuboSleep = 7200000000LL;
-
-    Serial.print("cuboSleep sleep:");
-    Serial.println(cuboSleep);
         
 }
 
@@ -63,7 +58,7 @@ void sendBattery(){
     Serial.println("Send Battery Info");
     int batteryLevel = readBatteryPorcentage();
     
-    http.setTimeout(10000); // Tiempo de espera en milisegundos
+    http.setTimeout(15000); // Tiempo de espera en milisegundos
 
     String httpMessage = "https://www.unioviedo.es/medialab/datos_cube.php?m=%27" + (String)macStr + "%27&b=" + String(batteryLevel);
     http.begin(httpMessage);

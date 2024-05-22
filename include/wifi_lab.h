@@ -16,9 +16,15 @@ extern char macStr[18];
 extern String networks;
 extern boolean networksAvailable;
 
+extern WiFiMulti wifiMulti;
+
 void getMac();
 
+String getLastMac();
+
 boolean connectWiFi();
+
+boolean connectWiFi2();
 
 void createWifi();
 

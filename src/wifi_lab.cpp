@@ -9,6 +9,7 @@ String password;
 String ssidAP = "ConfigCuboLab";
 String passwordAP = "cubolab00";
 
+
 char macStr[18];
 
 void getMac(){
@@ -16,6 +17,14 @@ void getMac(){
   WiFi.macAddress(mac);
   sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   mac[0] = 0;
+}
+
+String getLastMac(){
+  byte mac[6];
+  WiFi.macAddress(mac);
+  char cMac[18] = {0};
+  sprintf(cMac, "%02X-%02X-%02X",  mac[3], mac[4], mac[5]);
+  return String(cMac);
 }
 
 boolean connectWiFi() {
@@ -59,6 +68,60 @@ boolean connectWiFi() {
 
 }
 
+boolean connectWiFi2(){
+  Serial.println("MultiWIFI");
+
+  for (int i = 1; i <= 5; i++) {
+    // Construir las claves de búsqueda para el ssid y el password
+    String ssidKey = "ssid" + String(i);
+    String passKey = "pass" + String(i);
+
+    // Obtener el ssid y el password correspondientes al índice actual
+    String ssid = preferences.getString(ssidKey.c_str(), "");
+    String password = preferences.getString(passKey.c_str(), "");
+
+    // Si no se encontraron ssid y password para esta clave, continuar con el siguiente índice
+    if (ssid == "" || password == "") {
+      continue;
+    }
+
+    // Convertir los SSID y contraseñas a const char*
+    const char* ssidChar = ssid.c_str();
+    const char* passwordChar = password.c_str();
+
+    // Agregar la red WiFi con su contraseña
+    wifiMulti.addAP(ssidChar, passwordChar);
+  }
+
+  int attempts  = 0;
+  while (attempts  < 10) {
+    delay(1000); // Espera un momento para la conexión
+
+    if (wifiMulti.run() == WL_CONNECTED) {
+      Serial.println("Conectado a la red WiFi");
+      Serial.print(WiFi.SSID());
+      Serial.print(" ");
+      Serial.println(WiFi.RSSI());
+      Serial.print("Dirección IP: ");
+      Serial.println(WiFi.localIP());
+      break; // Sal del bucle si la conexión tiene éxito
+    } 
+    
+    else {
+      attempts ++;
+      Serial.println("Conexión fallida. Intento nuevamente...");
+    }
+  }
+
+  if (attempts  >= 9) {
+    // ToDo: Realiza alguna acción si no se puede conectar después de 10 intentos
+    Serial.println("No se pudo conectar a la red WiFi después de 10 intentos.");
+    return false;
+  }
+
+  return true;
+}
+
 
 void scanNetworks()
 {
@@ -80,8 +143,58 @@ void scanNetworks()
   networksAvailable = true;
 }
 
+
+
+void update_started() {
+  Serial.println("CALLBACK:  HTTP update process started");
+}
+
+void update_finished() {
+  Serial.println("CALLBACK:  HTTP update process finished");
+}
+
+void update_progress(int cur, int total) {
+  Serial.printf("CALLBACK:  HTTP update process at %d of %d bytes...\n", cur, total);
+}
+
+void update_error(int err) {
+  Serial.printf("CALLBACK:  HTTP update fatal error code %d\n", err);
+}
+
 void updateFirmware(){
+  Serial.println("Update Firmware");
   WiFiClient client;
-  t_httpUpdate_return ret = httpUpdate.updateSpiffs(client, "http://192.168.1.70:3000/update/0.2");
+
+  // The line below is optional. It can be used to blink the LED on the board during flashing
+  // The LED will be on during download of one buffer of data from the network. The LED will
+  // be off during writing that buffer to flash
+  // On a good connection the LED should flash regularly. On a bad connection the LED will be
+  // on much longer than it will be off. Other pins than LED_BUILTIN may be used. The second
+  // value is used to put the LED on. If the LED is on with HIGH, that value should be passed
+  // httpUpdate.setLedPin(LED_BUILTIN, LOW);
+
+  httpUpdate.onStart(update_started);
+  httpUpdate.onEnd(update_finished);
+  httpUpdate.onProgress(update_progress);
+  httpUpdate.onError(update_error);
+
+  t_httpUpdate_return ret = httpUpdate.update(client, "http://85.31.236.104:3035/update?version=2.1");
+  // Or:
+  //t_httpUpdate_return ret = httpUpdate.update(client, "server", 80, "/file.bin");
+
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:
+      Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+      break;
+
+    case HTTP_UPDATE_NO_UPDATES:
+      Serial.println("HTTP_UPDATE_NO_UPDATES");
+      break;
+
+    case HTTP_UPDATE_OK:
+      Serial.println("HTTP_UPDATE_OK");
+      ESP.restart();
+      break;
+  }
 
 }

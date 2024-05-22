@@ -1,0 +1,4 @@
+[15-May-2024 23:59:40 Europe/Berlin] PHP Parse error:  syntax error, unexpected 'http_response_code' (T_STRING), expecting ';' or ',' in /home/contrib/medialab/public_html/updater/check_version.php on line 18
+[16-May-2024 00:00:00 Europe/Berlin] PHP Parse error:  syntax error, unexpected 'http_response_code' (T_STRING), expecting ';' or ',' in /home/contrib/medialab/public_html/updater/check_version.php on line 18
+[16-May-2024 00:00:03 Europe/Berlin] PHP Parse error:  syntax error, unexpected 'http_response_code' (T_STRING), expecting ';' or ',' in /home/contrib/medialab/public_html/updater/check_version.php on line 18
+[16-May-2024 00:00:18 Europe/Berlin] PHP Parse error:  syntax error, unexpected 'http_response_code' (T_STRING), expecting ';' or ',' in /home/contrib/medialab/public_html/updater/check_version.php on line 18

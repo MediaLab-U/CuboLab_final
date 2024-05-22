@@ -140,17 +140,15 @@ void handleState(State state) {
       ledsOff();
       break;
 
-    case YELLOW_CHARGE:
+    case BLUE_CONFIG:
       ledsOff();
       for (int brillo = 0; brillo <= 255; brillo++) {
-        analogWrite(led_g, brillo);
-        analogWrite(led_r, brillo);
+        analogWrite(led_b, brillo);
         delayLab(10);
       }
 
       for (int brillo = 255; brillo >= 0; brillo--) {
-        analogWrite(led_g, brillo);
-        analogWrite(led_r, brillo);
+        analogWrite(led_b, brillo);
         delayLab(10);
       }
       ledsOff();
@@ -232,7 +230,7 @@ State readBatteryStateLab(boolean charge){
     if (batt >= 0 && batt <= 30) {
       return RED_CHARGE;
     } else if (batt >= 31 && batt <= 60) {
-      return YELLOW_CHARGE;
+      return BLUE_CONFIG;
     } else if (batt >= 61 && batt <= 90) {
       return GREEN_CHARGE;
     } else if (batt >= 91 && batt <= 100) {
