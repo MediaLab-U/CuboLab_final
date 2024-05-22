@@ -43,7 +43,6 @@ void handleRoot()
         String ssid5 = preferences.getString(wifiSsid.c_str(), "");
       
         content.replace("{MAC}", macStr);
-        content.replace("{batteryVoltage}", String(readBatteryLevel()));
         content.replace("{batteryPorcentage}", String(readBatteryPorcentage()));
         content.replace("{ssid1}", ssid1);
         content.replace("{ssid2}", ssid2);
