@@ -171,14 +171,15 @@ void updateFirmware(){
   // On a good connection the LED should flash regularly. On a bad connection the LED will be
   // on much longer than it will be off. Other pins than LED_BUILTIN may be used. The second
   // value is used to put the LED on. If the LED is on with HIGH, that value should be passed
-  // httpUpdate.setLedPin(LED_BUILTIN, LOW);
+  
+  httpUpdate.setLedPin(led_r, HIGH);
 
   httpUpdate.onStart(update_started);
   httpUpdate.onEnd(update_finished);
   httpUpdate.onProgress(update_progress);
   httpUpdate.onError(update_error);
 
-  t_httpUpdate_return ret = httpUpdate.update(client, "http://85.31.236.104:3035/update?version=2.1");
+  t_httpUpdate_return ret = httpUpdate.update(client, "http://85.31.236.104:3035/update?version=1.1");
   // Or:
   //t_httpUpdate_return ret = httpUpdate.update(client, "server", 80, "/file.bin");
 
@@ -193,6 +194,8 @@ void updateFirmware(){
 
     case HTTP_UPDATE_OK:
       Serial.println("HTTP_UPDATE_OK");
+
+      handleState(UPDATED_OK);  
       ESP.restart();
       break;
   }
