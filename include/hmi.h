@@ -17,15 +17,13 @@ enum State {
   GREEN_BATTERY,
   YELLOW_BATTERY,
   RED_BATTERY,
-  FULL_CHARGE,
   GREEN_CHARGE,
-  BLUE_CONFIG,
-  RED_CHARGE,
+  CONFIG,
   NO_BATTERY,
   NEW_SEND,
-  CONFIG,
   REMEMBER,
   MARIO_BROS,
+  UPDATED_OK
 };
 
 void initHMI();
@@ -41,7 +39,7 @@ void testBuzzer();
 
 void handleState(State);
 
-State readBatteryStateLab(boolean charge = false);
+State readBatteryStateLab();
 
 
 #endif // IMU_H
