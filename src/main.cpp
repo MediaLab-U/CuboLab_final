@@ -7,7 +7,7 @@ long t1;
   
 State state;
 
-float cubeVersion = 1.0;
+float cubeVersion = 4.0;
 
 void setup()
 {
@@ -17,7 +17,8 @@ void setup()
   Serial.begin(115200);
  
   Serial.println("");
-  Serial.println("Iniciando cubo V1");
+  Serial.print("Iniciando cubo v");
+  Serial.println(cubeVersion);
   
   Serial.println("Configurando Human Interface");             // Configurar Leds y Buzzer
   initHMI();
@@ -48,7 +49,7 @@ void setup()
   }
 
   Serial.println("Comprobamos nivel de bateria");
-  state = readBatteryStateLab(false);                         // Leemos estado batería en carga
+  state = readBatteryStateLab();                         // Leemos estado batería en carga
   handleState(state);                                      
   
   Serial.println("Iniciando IMU");                            // Inicialización y configuración del IMU
@@ -68,12 +69,13 @@ void setup()
   /*--------------------------------------------------------------- POR QUÉ DESPIERTO --------------------------------------------------------------*/
 
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+  Serial.print("Wake Up reason: ");
   Serial.println(wakeup_reason);
   switch(wakeup_reason) {
 
     case ESP_SLEEP_WAKEUP_EXT0:
       // CARGA
-      if (analogRead(VCharge) > 3500) {
+      if (analogRead(VCharge) > 2500) {
         Serial.println("El dispositivo se ha enchufado");
         cubeState = WIFI_CONFIG;
       } 
@@ -91,7 +93,14 @@ void setup()
       Serial.println("Conectando WiFi");         
       if(!connectWiFi()){                                        
         // TO-DO mostrar error 
-        goToSleep();
+
+        if (analogRead(VCharge) > 2500) {
+        Serial.println("El dispositivo se ha enchufado");
+        cubeState = WIFI_CONFIG;
+        }
+        else{
+          goToSleep();
+        } 
       }
       else{
         updateFirmware();
@@ -111,7 +120,7 @@ void setup()
 
     default:
       // CARGA
-      if (analogRead(VCharge) > 3500) {
+      if (analogRead(VCharge) > 2500) {
         Serial.println("El dispositivo se ha enchufado");
         cubeState = WIFI_CONFIG;
       } 
@@ -125,7 +134,8 @@ void setup()
 
   // Hay veces que a pesar de estar enchufado piensa que despierta por movimiento
   // por eso lo volvemos a forzar aquí en caso de que esté enchufado.
-  if (analogRead(VCharge) > 3500) {
+  
+  if (analogRead(VCharge) > 2500) {
         Serial.println("El dispositivo se ha enchufado");
         cubeState = WIFI_CONFIG;
       } 
@@ -141,7 +151,7 @@ void loop()
     
     case WIFI_CONFIG: 
         
-        handleState(BLUE_CONFIG);                                           // Mostramos por hmi la carga
+        handleState(CONFIG);                                           // Mostramos por hmi la carga
 
 
         if (firstConfig){                                                    // La primera vez configuramos el punto AP
@@ -165,8 +175,8 @@ void loop()
           cubeState = CHARGE;
         }
 
-        if (analogRead(VCharge) < 3500){                                     // Si se desenchufa salimos del modo configuración                       
-          Serial.println("Salimos de modo charge");
+        if (analogRead(VCharge) < 2500){                                     // Si se desenchufa salimos del modo configuración                       
+          Serial.println("Salimos de modo configuración por desenchufar");
           WiFi.disconnect(true);
           cubeState = NORMAL_MODE;
         }
@@ -177,7 +187,7 @@ void loop()
 
       handleState(GREEN_CHARGE);                                        // Mostramos por hmi la carga
 
-      if (analogRead(VCharge) < 3500){
+      if (analogRead(VCharge) < 2500){
           Serial.println("Salimos de modo charge");
           cubeState = NORMAL_MODE;
         }
@@ -208,7 +218,7 @@ void loop()
 
       }
       // To-Do
-      if (analogRead(VCharge) > 3500) {
+      if (analogRead(VCharge) > 2500) {
         Serial.println("El dispositivo se ha enchufado");
         cubeState = WIFI_CONFIG;
       }
