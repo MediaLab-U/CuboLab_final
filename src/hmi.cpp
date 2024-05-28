@@ -2,6 +2,7 @@
 
 int notas[] = {1320, 1320, 0, 1320, 0, 1047, 1320, 0, 1568, 0, 0, 0, 784};
 int notas2[] = {1320, 1320, 0, 1047, 0, 1320};
+int notas3[] = {1047, 0, 1320, 0, 1568, 0, 2093, 0};
 
 void initHMI() 
 {
@@ -122,10 +123,6 @@ void handleState(State state) {
       }
       break;
 
-    case FULL_CHARGE:
-      ledsOff();
-      ledGreen();
-      break;
 
     case GREEN_CHARGE:
       ledsOff();
@@ -189,6 +186,27 @@ void handleState(State state) {
         if(i%2==0){
           ledsOff();
           ledRed();
+        }else{
+          ledsOff();
+          ledPurple();
+        }
+        delayLab(200);
+        noTone(BUZZER_PIN);
+        delayLab(50);
+      }
+      
+      ledsOff();
+      ledGreen();
+      delayLab(2000);
+      break;
+
+    case NEW_VERSION:
+      // Reproducir la melodía
+      for (int i = 0; i <8; i++) {
+        tone(BUZZER_PIN, notas3[i]);
+        if(i%2==0){
+          ledsOff();
+          ledGreen();
         }else{
           ledsOff();
           ledPurple();

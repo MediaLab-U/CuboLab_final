@@ -36,6 +36,7 @@ extern String cubeTime;
 extern long long int cuboSleep;
 
 extern float cubeVersion;
+extern float version;
 
 #define VBat    34
 #define VCharge 33

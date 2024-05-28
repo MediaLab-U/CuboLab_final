@@ -178,8 +178,8 @@ void updateFirmware(){
   httpUpdate.onEnd(update_finished);
   httpUpdate.onProgress(update_progress);
   httpUpdate.onError(update_error);
-
-  t_httpUpdate_return ret = httpUpdate.update(client, "http://85.31.236.104:3035/update?version=1.1");
+  String url = "http://85.31.236.104:3035/update?version=" + String(cubeVersion);
+  t_httpUpdate_return ret = httpUpdate.update(client, url);
   // Or:
   //t_httpUpdate_return ret = httpUpdate.update(client, "server", 80, "/file.bin");
 

@@ -10,6 +10,7 @@ void initMemory() {
   preferences.begin("MediaLab", false);
   ssid = preferences.getString("ssid", "MikroTik-B87EBD");
   password = preferences.getString("pass", "medialab2019");
+  version = preferences.getFloat("version", 1.0);
 }
 
 void configFileSystem() {

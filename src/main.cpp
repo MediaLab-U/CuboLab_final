@@ -7,7 +7,9 @@ long t1;
   
 State state;
 
-float cubeVersion = 4.0;
+float cubeVersion = 4.2;
+
+float version;
 
 void setup()
 {
@@ -57,6 +59,12 @@ void setup()
 
   Serial.println("Configurando Memoria");                     // Inicialización de la memoria no voltail - !IMPORTANTE! tiene que estar antes de la configuración WiFi
   initMemory();
+
+  if (version<cubeVersion){
+    Serial.println("Nueva version");
+    handleState(NEW_VERSION);
+    preferences.putFloat("version", cubeVersion);
+  }
 
   Serial.println("Configuraciones ESP32 Modo Bajo Consumo");  // Configurar parameros del esp durante sleep
   configSleep();

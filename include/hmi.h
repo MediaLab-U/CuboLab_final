@@ -23,7 +23,8 @@ enum State {
   NEW_SEND,
   REMEMBER,
   MARIO_BROS,
-  UPDATED_OK
+  UPDATED_OK,
+  NEW_VERSION,
 };
 
 void initHMI();
