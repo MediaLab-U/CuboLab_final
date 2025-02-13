@@ -105,7 +105,8 @@ void loop() {
 
       float A2 = sqrt(ax*ax + ay*ay + az*az);// Magnitud del vector de aceleración
       float G2 = sqrt(gx*gx + gy*gy + gz*gz);// Magnitud del vector de velocidad angular
-
+      
+    
       //Serial.println(G2);
       
       /* ---------- DETECCIÓN MOVIMIENTO ---------- */
